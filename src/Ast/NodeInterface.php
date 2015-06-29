@@ -1,0 +1,45 @@
+<?php
+
+namespace Curly\Ast;
+
+/**
+ * 
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 1.0.0
+ */
+interface NodeInterface
+{
+    /**
+     * Returns the node type.
+     *
+     * @return string the node type.
+     */
+    public function getType();
+    
+    /**
+     * Returns if set the flags for this node.
+     *
+     * A flag is either a bitmask, or named constant. A bitwise operator can be used
+     * to check check if a flag is present (($flags & $flag) === $flag).
+     *
+     * @return int a bitmask for the flags set.
+     */
+    public function getFlags();
+    
+    /**
+     * Returns if present the line number. If no line number was provided
+     * a negative number is returned.
+     * 
+     * @return int the line number, defaults to -1.
+     */
+    public function getLineNumber();
+    
+    /**
+     * Returns a list containing the children of this node.
+     *
+     * @return SetInterface a collection of nodes.
+     */
+    public function getChildren();
+}
