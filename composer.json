@@ -1,0 +1,20 @@
+{
+    "name": "christopher/curly",
+    "description": "A lightweight template language for creating or customizing reports",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Chris Harris",
+            "email": "c.harris@hotmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Curly\\": "src/"
+        }
+    }
+}
