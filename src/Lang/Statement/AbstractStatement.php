@@ -2,24 +2,30 @@
 
 namespace Curly\Lang\Statement;
 
+use SplStack;
+
 use Curly\Lang\StatementInterface;
 
 abstract class AbstractStatement implements StatementInterface
-{ 
+{    
+    /**
+     * Returns a parser that converts a collection of tokens into an abstract syntax tree (AST).
+     *
+     * @return SubparserInterface object to parse a collection of tokens.
+     */
+    abstract protected function getParser();
+
     /**
      * {@inheritDoc}
      */
-    public function isConditional()
+    public function parse(SplStack $tokens)
     {
-        return false;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public function isCompound()
-    {
-        return false;
+        $node = null;
+        if (($parser = $this->getParser()) !== null) {
+            $node = $parser->parse($tokens); 
+        }
+        
+        return $node;
     }
 
     /**

@@ -22,8 +22,8 @@ class DeclarationStatement extends AbstractStatement
     /**
      * {@inheritDoc}
      */
-    public function parse()
+    protected function getParser()
     {
-        
+    
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Curly\Lang;
 
+use SplStack;
+
 use Curly\Collection\Comparator\Comparable;
 
 /**
@@ -21,25 +23,10 @@ interface StatementInterface extends Comparable
     public function getKeyword();
     
     /**
-     * Returns true if this statement is a conditional statement.
-     *
-     * @return bool true is this statement is conditional, false otherwise.
-     * @link http://cpp-wiki.wikidot.com/tutorials:conditional-statements
-     */
-    public function isConditional();
-    
-    /**
-     * Returns true if this statement is a compound statement.
-     *
-     * @return bool true if this statement is a compound, false otherwise.
-     * @link http://www.macs.hw.ac.uk/~rjp/Coursewww/CPPwww/compound.html
-     */
-    public function isCompound();
-    
-    /**
      * Parses the given tokens into an abstract syntax tree (AST).
      *
-     * @return NodeInterface tree of nodes
+     * @param SplStack $token a last-in-first-out (LIFO) stack of tokens.
+     * @return NodeInterface|null a node from the specified tokens, or null if parsing failed.
      */
-    public function parse();
+    public function parse(SplStack $tokens);
 }

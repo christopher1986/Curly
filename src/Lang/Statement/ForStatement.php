@@ -9,7 +9,7 @@ namespace Curly\Lang\Statement;
  * @version 1.0.0
  * @since 1.0.0
  */
-class ForStatement extends CompoundStatement
+class ForStatement extends AbstractStatement
 {
     /**
      * {@inheritDoc}
@@ -22,16 +22,8 @@ class ForStatement extends CompoundStatement
     /**
      * {@inheritDoc}
      */
-    public function isConditional()
+    protected function getParser()
     {
-        return true;
-    }
     
-    /**
-     * {@inheritDoc}
-     */
-    public function parse()
-    {
-        
     }
 }

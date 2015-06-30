@@ -22,8 +22,8 @@ class PrintStatement extends AbstractStatement
     /**
      * {@inheritDoc}
      */
-    public function parse()
+    protected function getParser()
     {
-        
+    
     }
 }
