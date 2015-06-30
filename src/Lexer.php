@@ -10,7 +10,14 @@ use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\Lexer\Token;
 use Curly\Util\Arrays;
 
-class Lexer implements LexerInterface
+/**
+ * 
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 1.0.0
+ */
+class Lexer implements LexerInterface, EngineAwareInterface
 {
     /**
      * A finite number of states.
@@ -101,9 +108,18 @@ class Lexer implements LexerInterface
      */
     public function __construct(EngineInterface $engine)
     {
-        $this->engine     = $engine;
+        $this->setEngine($engine);
+        
         $this->tokens     = new SplQueue();
         $this->comparator = new ObjectComparator();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function setEngine(EngineInterface $engine)
+    {
+        $this->engine = $engine;
     }
 
     /**
@@ -220,12 +236,7 @@ class Lexer implements LexerInterface
         
             $patterns = array();
             foreach ($statements as $statement) {
-                $keyword = preg_quote($statement->getKeyword(), '/');
-                if ($statement->isConditional()) {
-                    $patterns[] = sprintf('%s(?=[\s\(])', $keyword);
-                } else {
-                    $patterns[] = sprintf('%s(?=[\s])', $keyword);
-                }
+                $patterns[] = sprintf('%s(?=[\s\(])', preg_quote($statement->getKeyword(), '/'));
             }
             
             $this->regexes['statement'] = sprintf('/(%s)/A', implode('|', $patterns));
