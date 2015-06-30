@@ -2,6 +2,13 @@
 
 namespace Curly;
 
+/**
+ * 
+ *
+ * @author Chris Harris
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 interface LexerInterface
 {
     /**
