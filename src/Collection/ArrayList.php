@@ -2,15 +2,15 @@
 
 namespace Curly\Collection;
 
-use ArrayIterator;
+use Curly\Collection\Iterator\ListIterator;
 
-use Curly\Collection\Comparator\Comparator;
 
 /**
  * This class implements the {@see ListInterface} and is backed by a native array.
  *
  * @author Chris Harris
  * @version 1.0.0
+ * @since 1.0.0
  */
 class ArrayList implements ListInterface
 {
@@ -19,14 +19,7 @@ class ArrayList implements ListInterface
      *
      * @var array
      */
-    private $elements = array();
-    
-    /**
-     * The internal pointer of this list.
-     *
-     * @var int
-     */
-    private $position = 0;
+    protected $elements = array();
     
     /**
      * Construct a new ArrayList.
@@ -45,7 +38,10 @@ class ArrayList implements ListInterface
      */
     public function add($element)
     {
+        $oldSize = $this->count();
         $this->elements[] = $element;
+        
+        return ($this->count() !== $oldSize);
     }
     
     /**
@@ -117,7 +113,7 @@ class ArrayList implements ListInterface
             throw new \InvalidArgumentException(sprintf(
                 '%s: expects an integer argument; received "%s"',
                 __METHOD__,
-                (is_object($fromIndex) ? get_class($fromIndex) : gettype($fromIndex))
+                (is_object($index) ? get_class($index) : gettype($index))
             ));
         } else if ($index < 0 || $index >= $this->count()) {
             throw new \OutOfRangeException(sprintf(
@@ -184,11 +180,12 @@ class ArrayList implements ListInterface
      */
     public function remove($element)
     {
-        $retval = null;
+        $oldSize = $this->count();
         if (false !== ($index = array_search($element, $this->elements))) {
-            $retval = $this->removeByIndex($index);
+            $this->removeByIndex($index);
         }
-        return $retval;
+        
+        return ($this->count !== $oldSize);
     }
     
     /**
@@ -309,82 +306,13 @@ class ArrayList implements ListInterface
     }
     
     /**
-     * Returns the current element.
+     * Returns an external iterator over the elements in this list.
      *
-     * @return mixed the current element.
-     */
-    public function current()
+     * @return ListIterator an iterator over the elements in this list.
+     */    
+    public function getIterator()
     {
-        return $this->elements[$this->position];
-    }
-    
-    /**
-     * Returns the index of the current element.
-     *
-     * @return int the index of the current element.
-     */
-    public function key()
-    {
-        return $this->position;
-    }
-    
-    /**
-     * Move towards to the next element.
-     */
-    public function next()
-    {
-        ++$this->position;
-    }
-    
-    /**
-     * Rewind the list to the first element.
-     */
-    public function rewind()
-    {
-        $this->position = 0;
-    }
-    
-    /**
-     * Checks if current position is valid.
-     *
-     * @return bool true if there are element left, false otherwise.
-     */
-    public function valid()
-    {
-        return (isset($this->elements[$this->position]));
-    }
-    
-    /**
-     * Returns an element that lies beyond the current position of the list without moving the internal pointer forward.
-     *
-     * @param int $amount the number of elements to look beyond.
-     * @return mixed|null the element found, or null if the given amount exceeds the number of remaining elements.
-     * @throws InvalidArgumentException if the given argument is not an integer value.
-     * @throws LogicException if the given argument is a negative value.
-     */
-    public function peek($amount = 1)
-    {
-	    if (!is_int($amount)) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects an integer argument; received "%s"',
-                __METHOD__,
-                (is_object($amount) ? get_class($amount) : gettype($amount))
-            ));
-	    } else if ($amount < 0) {
-            throw new \LogicException(sprintf(
-                '%s: unable to peek backwards; amount must be a positive number',
-                __METHOD__
-            ));
-	    }
-
-        $index = (int) ($index + $lookahead);
-        if ($index < $this->count()) {
-            $element = $this->get($index);
-        } else {
-            $element = null;
-        }
-        
-        return $element;
+        return new ListIterator($this);
     }
     
     /**
@@ -426,7 +354,7 @@ class ArrayList implements ListInterface
             ));
         }
         
-        $list = new self();
+        $list = new static();
         if ($elements = array_slice($this->toArray(), $fromIndex, ($toIndex - $fromIndex))) {
             $list->addAll($elements);
         }
@@ -436,8 +364,8 @@ class ArrayList implements ListInterface
     /**
      * {@inheritDoc}
      */
-    public function sort(Comparator $comparator)
+    public function toArray()
     {
-        usort($this->elements, array($comparator, 'compare')); 
+        return $this->elements;
     }
 }

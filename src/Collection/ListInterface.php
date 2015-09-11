@@ -3,55 +3,54 @@
 namespace Curly\Collection;
 
 use Countable;
-use Iterator;
-
-use Curly\Collection\Comparator\Comparator;
+use IteratorAggregate;
 
 /**
  * An ordered collection (also known as a sequence). Elements can be inserted to the list at a specified position. 
  * These elements can be retrieved from the list using a (positive integer) position.
  *
  * @author Chris Harris
- * @version 1.0.0.
+ * @version 1.0.0
+ * @since 1.0.0
  */
-interface ListInterface extends Countable, Iterator
+interface ListInterface extends Countable, IteratorAggregate
 {
     /**
-     * Add if not present the specified element to this collection.
+     * Add the specified element to this list.
      *
-     * @param mixed $element the element to add to this collection.
-     * @return bool true if this collection did not already contain the specified element.
+     * @param mixed $element the element to add to this list.
+     * @return bool true if this list did not already contain the specified element.
      */
     public function add($element);
     
     /**
-     * Add to this collection all of the elements that are contained in the specified collection.
+     * Add to this list all of the elements that are contained in the specified collection.
      *
-     * @param array|\Traversable $elements collection containing elements to add to this collection.
-     * @return bool true if the collection has changed, false otherwise.
+     * @param array|\Traversable $elements collection containing elements to add to this list.
+     * @return bool true if the list has changed, false otherwise.
      * @throws InvalidArgumentException if the given argument is not an array or Traversable object.
      */
     public function addAll($elements);
     
     /**
-     * Removes all elements from this collection. The collection will be empty after this call returns.
+     * Removes all elements from this list. The list will be empty after this call returns.
      */
     public function clear();
     
     /**
-     * Returns true if this collection contains the specified element. More formally returns true only if this collection
+     * Returns true if this list contains the specified element. More formally returns true only if this list
      * contains an element $e such that ($e === $element).
      *
      * @param mixed $element the element whose presence will be tested.
-     * @return bool true if this collection contains the specified element, false otherwise.
+     * @return bool true if this list contains the specified element, false otherwise.
      */
     public function contains($element);
     
     /**
-     * Returns true if this collection contains all the elements contained by the specified collection.
+     * Returns true if this list contains all the elements contained by the specified collection.
      *
      * @param array|\Traversable $elements collection of elements whose presence will be tested.
-     * @return bool true if this collection contains all elements in the specified collection, false otherwise.
+     * @return bool true if this list contains all elements in the specified collection, false otherwise.
      */
     public function containsAll($elements);
     
@@ -84,26 +83,26 @@ interface ListInterface extends Countable, Iterator
     public function lastIndexOf($element);
     
     /**
-     * Returns true if this collection is considered to be empty.
+     * Returns true if this list is considered to be empty.
      *
-     * @return bool true is this collection contains no elements, false otherwise.
+     * @return bool true is this list contains no elements, false otherwise.
      */
     public function isEmpty();
     
     /**
-     * Removes if present the specified element from this collection. More formally removes an element $e such 
-     * that ($e === $element), if this collection contains such an element.
+     * Removes if present the specified element from this list. More formally removes an element $e such 
+     * that ($e === $element), if this list contains such an element.
      *
-     * @param mixed $element the element to remove from this collection.
-     * @return mixed the element that was removed from the collection, or null if the element was not found.
+     * @param mixed $element the element to remove from this list.
+     * @return boolean true if this list contained the specified element, false otherwise.
      */
     public function remove($element);
     
     /**
-     * Removes from this collection all of the elements that are contained in the specified collection.
+     * Removes from this list all of the elements that are contained in the specified collection.
      *
-     * @param array|\Traversable $elements collection containing elements to remove from this collection.
-     * @return bool true if the collection has changed, false otherwise.
+     * @param array|\Traversable $elements collection containing elements to remove from this list.
+     * @return bool true if the list has changed, false otherwise.
      * @throws InvalidArgumentException if the given argument is not an array or Traversable object.
      */
     public function removeAll($elements);
@@ -113,18 +112,18 @@ interface ListInterface extends Countable, Iterator
      * such that ($e === $element), if this list contains such an element.
      *
      * @param int index the index of the element to be removed.
-     * @return mixed the element that was removed from this collection, or null if no element was not found.
+     * @return mixed the element that was removed from this list, or null if no element was not found.
      * @throws InvalidArgumentException if the given argument is not a numeric value.
      * @throws OutOfRangeException if the index is out of range ($index < 0 || $index >= ListInterface::count()).
      */
     public function removeByIndex($index);
     
     /**
-     * Retains only the elements in this collection that are contained in the specified collection. In other words,
-     * remove from this collection all of it's elements that are not contained in the specified collection.
+     * Retains only the elements in this list that are contained in the specified collection. In other words,
+     * remove from this list all of it's elements that are not contained in the specified collection.
      *
-     * @param array|\Traversable $elements collection containing element to be retained in this collection.
-     * @return bool true if the collection has changed, false otherwise.
+     * @param array|\Traversable $elements collection containing element to be retained in this list.
+     * @return bool true if the list has changed, false otherwise.
      * @throws InvalidArgumentException if the given argument is not an array or Traversable object.
      */
     public function retainAll($elements);
@@ -156,9 +155,9 @@ interface ListInterface extends Countable, Iterator
     public function subList($fromIndex, $toIndex);
     
     /**
-     * Sorts this list using the specified {@link Comparator}.
+     * Returns an array containing all of the elements in this list.
      *
-     * @return void
+     * @return array an array containing all the elements in this list.
      */
-    public function sort(Comparator $comparator);
+    public function toArray();
 }
