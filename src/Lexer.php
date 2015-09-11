@@ -2,12 +2,13 @@
 
 namespace Curly;
 
-use SplQueue;
-
-use Curly\Collection\Comparator\ObjectComparator;
+use Curly\Collection\Stream\Stream;
+use Curly\Collection\Stream\TokenStream;
+use Curly\Common\Comparator\ObjectComparator;
+use Curly\Common\Comparator\LengthComparator;
 use Curly\Io\StringReader;
 use Curly\Parser\Exception\SyntaxException;
-use Curly\Parser\Lexer\Token;
+use Curly\Parser\Token;
 use Curly\Util\Arrays;
 
 /**
@@ -17,25 +18,50 @@ use Curly\Util\Arrays;
  * @version 1.0.0
  * @since 1.0.0
  */
-class Lexer implements LexerInterface, EngineAwareInterface
+class Lexer implements LexerInterface
 {
     /**
-     * A finite number of states.
+     * Lexer states
      */
-    const STATE_TEXT = 0x01;
-    const STATE_LANG = 0x02;
+    const STATE_TEXT = 1;
+    const STATE_LANG = 2;
 
     /**
-     * Possible tokens types.
+     * A collection of code tags to match.
+     *
+     * @var array
      */
-    const T_TEXT        = 0x01;
-    const T_TAG         = 0x02;
-    const T_STATEMENT   = 0x03;
-    const T_OPERATOR    = 0x04;
-    const T_IDENTIFIER  = 0x05;
-    const T_NUMBER      = 0x06;
-    const T_STRING      = 0x07;
-    const T_PUNCTUATION = 0x08;
+    private $tags = array(
+        'open'  => '<%',
+        'close' => '%>',
+    );
+    
+    /**
+     * A mapping between punctuations and their respective token types.
+     *
+     * @var array
+     */
+    private $punctuations = array(
+        '[' => Token::T_OPEN_BRACKET,
+        ']' => Token::T_CLOSE_BRACKET,
+        '(' => Token::T_OPEN_PARENTHESIS,
+        ')' => Token::T_CLOSE_PARENTHESIS,
+        '{' => Token::T_OPEN_BRACE,
+        '}' => Token::T_CLOSE_BRACE,
+        '.' => Token::T_PERIOD,
+        ',' => Token::T_COMMA,
+        '|' => Token::T_PIPELINE,
+        ';' => Token::T_SEMICOLON,
+        ':' => Token::T_COLON,
+        '=' => Token::T_ASSIGN,
+    );
+
+    /**
+     * A collection of tokens found by the lexer.
+     *
+     * @var array
+     */
+    private $tokens = array();
 
     /**
      * The template engine.
@@ -43,30 +69,6 @@ class Lexer implements LexerInterface, EngineAwareInterface
      * @var EngineInterface
      */
     private $engine;
-
-    /**
-     * A comparison function to sort objects.
-     *
-     * @var Comparator
-     */
-    private $comparator;
-
-    /**
-     * A collection of tags to match.
-     *
-     * @var array
-     */
-    private $tags = array(
-        'open'  => '{%',
-        'close' => '%}',
-    );
-    
-    /**
-     * A collection of tokens found by the lexer.
-     *
-     * @var SplQueue 
-     */
-    private $tokens;
     
     /**
      * A reader from which to read characters.
@@ -97,8 +99,8 @@ class Lexer implements LexerInterface, EngineAwareInterface
     private $regexes = array(
         'number'      => '/([0-9]+(?:\.[0-9]+)?)/A',
         'string'      => '/([\'"])(.*?)(?<!\\\)\1/As',
+        'literal'     => '/(true|false|null)\b/Ai',
         'identifier'  => '/([a-z_\x7f-\xff]{1}[a-z0-9_\x7f-\xff]*)/Ai',
-        'punctuation' => '/([\[\]\(\)\{\}.,\|;\:\=])/A',
     );
 
     /**
@@ -109,24 +111,10 @@ class Lexer implements LexerInterface, EngineAwareInterface
     public function __construct(EngineInterface $engine)
     {
         $this->setEngine($engine);
-        
-        $this->tokens     = new SplQueue();
-        $this->comparator = new ObjectComparator();
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public function setEngine(EngineInterface $engine)
-    {
-        $this->engine = $engine;
     }
 
     /**
      * {@inheritDoc}
-     *
-     * @param string $input the data that will be tokenized.
-     * @throws InvalidArgumentException if the given argument is not a string.
      */
     public function tokenize($input)
     {    
@@ -145,120 +133,168 @@ class Lexer implements LexerInterface, EngineAwareInterface
             }
         }
         
-        echo '<pre>';
-        foreach ($this->tokens as $token) {
-            var_dump($token);
-        }
+        $stream = new Stream($this->tokens);
+        return new TokenStream($stream);
     }
     
+    /**
+     * Tokenize text which does not belong to the language.
+     *
+     * The grammar associated with these symbols and words is shown below and is written
+     * in Extended Backus–Naur Form (EBNF).
+     *
+     * text ::= {"0x20".."0x7e"}
+     */
     private function tokenizeText()
-    {    
+    {            
         $lineNumber = $this->reader->getLineNumber();
         if (($tagPos = array_shift($this->tagPositions)) !== null) {
             if (($amount = $tagPos[1] - $this->reader->getPosition()) > 0) {
-                $this->enqueueToken(self::T_TEXT, $this->reader->readChar($amount), $lineNumber);
+                $this->pushToken(Token::T_TEXT, trim($this->reader->readChar($amount), "\n\r\0\x0B"), $lineNumber);
             }
 
             $lineNumber = $this->reader->getLineNumber();
             if (($tag = $this->reader->readChar(strlen($tagPos[0]))) === $tagPos[0]) {
-                $this->enqueueToken(self::T_TAG, $tag, $lineNumber);
-                // update lexer's state.
+                // illegal tag since were already interpreting (plain) text.
+                if ($tag === $this->tags['close']) {
+                    throw new SyntaxException(sprintf('Unexpected "%s"', $tag), $lineNumber);
+                }
+            
+                $this->pushToken(Token::T_OPEN_TAG, $tag, $lineNumber);
+                // interpret the remaining sequence of characters as code.
                 $this->state = self::STATE_LANG;
             }            
         } else if ($this->reader->hasNextChar()) {
-            $this->enqueueToken(self::T_TEXT, $this->reader->readToEnd(), $lineNumber);
+            $this->pushToken(Token::T_TEXT, trim($this->reader->readToEnd(), "\n\r\0\x0B"), $lineNumber);
         }
     }
     
     /**
-     * 
+     * Tokenize symbols and words that are part of the language.
      *
-     * @link http://openbookproject.net/thinkcs/python/english3e/variables_expressions_statements.html
+     * The grammar associated with these symbols and words is shown below and is written
+     * in Extended Backus–Naur Form (EBNF).
+     * 
+     * digit       ::= 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+     * float       ::= digit "." digit {digit}
+     * number      ::= digit | float
+     * letter      ::= "a".."z" | "A".."Z" | "x7f".."xff"
+     * identifier  ::= letter | "_" {letter | digit | "_"}
+     * string      ::= ['"] text ['"]
+     * boolean     ::= true | false
+     * null        ::= null
+     * keyword     ::= "const" | "var" | "for" | "endfor" | "if" | "elseif" | "else" | "endif" | "print"
+     * operator    ::= "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" | "==" | "!=" | "or" | "and" | "not"
+     * punctuation ::= "[" | "]" | "(" | ")" | "{" | "}" | "." | "," | "|" | ";" | ":" | "="
      */
     private function tokenizeLang()
     {    
-        // skip preceding whitespace.
+        // whitespace is ignored because it has no special meaning.
         if ($this->reader->matches('/\s+/A', $matches)) {
             $this->reader->skip(strlen($matches[0]));
         }
-    
+
         $matches = array();
-        if ($this->reader->matches($this->getTagRegex(), $matches)) {    
-            $this->enqueueToken(self::T_TAG, $matches[1], $this->reader->getLineNumber());
+        // code tags
+        if ($this->reader->matches($this->getTagRegex(), $matches)) {
+            // illegal tag since were already interpreting code.
+            if ($matches[1] === $this->tags['open']) {
+                throw new SyntaxException(sprintf('Unexpected "%s"', $matches[0]), $this->reader->getLineNumber());
+            }
             
-            // update lexer's state.
-            if ($matches[1] == $this->tags['close']) {
+            $this->pushToken(Token::T_CLOSE_TAG, $matches[1], $this->reader->getLineNumber());
+            
+            // interpret the remaining sequence of characters as (plain) text.
+            if ($matches[1] === $this->tags['close']) {
                 $this->state = self::STATE_TEXT;
             }
-        } else if ($this->reader->matches($this->getStatementRegex(), $matches)) {
-            $this->enqueueToken(self::T_STATEMENT, $matches[1], $this->reader->getLineNumber());
-        } else if ($this->reader->matches($this->getOperatorRegex(), $matches)) {
-            $this->enqueueToken(self::T_OPERATOR, $matches[1], $this->reader->getLineNumber());
-        } else if ($this->reader->matches($this->regexes['identifier'], $matches)) {
-            $this->enqueueToken(self::T_IDENTIFIER, $matches[1], $this->reader->getLineNumber());
-        } else if ($this->reader->matches($this->regexes['number'], $matches)) {
-            $number = (float) $matches[1];
-            if (ctype_digit($matches[1]) && $matches[1] <= PHP_INT_MAX) {
-                $number = (int) $number;
+        } 
+        // statements
+        else if ($this->reader->matches($this->getKeywordRegex(), $matches)) {
+            $this->pushToken(Token::T_KEYWORD, $matches[1], $this->reader->getLineNumber());
+        } 
+        // operators
+        else if ($this->reader->matches($this->getOperatorRegex(), $matches)) {
+            $this->pushToken(Token::T_OPERATOR, $matches[1], $this->reader->getLineNumber());
+        } 
+        // strings
+        else if ($this->reader->matches($this->regexes['string'], $matches)) {
+            $this->pushToken(Token::T_STRING, stripslashes($matches[2]), $this->reader->getLineNumber());
+        } 
+        // literals
+        else if ($this->reader->matches($this->regexes['literal'], $matches)) {
+            if (in_array(strtolower($matches[1]), array('true', 'false'))) {
+                $this->pushToken(Token::T_BOOLEAN, $matches[1], $this->reader->getLineNumber());
+            } else {
+                $this->pushToken(Token::T_NULL, $matches[1], $this->reader->getLineNumber());
             }
-        
-            $this->enqueueToken(self::T_NUMBER, $number, $this->reader->getLineNumber());
-        } else if ($this->reader->matches($this->regexes['string'], $matches)) {
-            // unescape quotes.
-            $string = str_replace("\\{$matches[1]}", $matches[1], $matches[2]);
-            
-            $this->enqueueToken(self::T_STRING, $string, $this->reader->getLineNumber());
-        } else if ($this->reader->matches($this->regexes['punctuation'], $matches)) {
-            $this->enqueueToken(self::T_PUNCTUATION, $matches[1], $this->reader->getLineNumber());
+        } 
+        // numbers
+        else if ($this->reader->matches($this->regexes['number'], $matches)) {
+            if (ctype_digit($matches[1]) && $matches[1] <= PHP_INT_MAX) {
+                $this->pushToken(Token::T_INTEGER, $matches[1], $this->reader->getLineNumber());
+            } else {
+                $this->pushToken(Token::T_FLOAT, $matches[1], $this->reader->getLineNumber());
+            }
+        } 
+        // identifiers
+        else if ($this->reader->matches($this->regexes['identifier'], $matches)) {
+            $this->pushToken(Token::T_IDENTIFIER, $matches[1], $this->reader->getLineNumber());
+        } 
+        // punctuation
+        else if ($this->reader->matches($this->getPunctutationRegex(), $matches)) {
+            $value = $matches[1];
+            $type  = (isset($this->punctuations[$value])) ? $this->punctuations[$value] : Token::T_UNKNOWN;
+                
+            $this->pushToken($type, $value, $this->reader->getLineNumber());
         }
 
         if ($this->reader->hasNextChar()) {
             if (!isset($matches[0])) {
-                $lineNumber = $this->reader->getLineNumber();
-                throw new SyntaxException("Unknown character '{$this->reader->readWord()}' was found", $lineNumber);
+                throw new SyntaxException(sprintf('Unknown character "%s" was found', $this->reader->readWord()), $this->reader->getLineNumber());
             }
             
-            // move reader forward.
+            // skip the whole sequence of characters that matched.
             $this->reader->skip(strlen($matches[0]));
         }
     }
     
     /**
-     * Returns a regular expression to match statements from the template engine.
+     * Returns a regular expression to match reserved symbols or words from the template engine.
      *
-     * @return string regular expression to match statements.
+     * @return string a regular expression to match words.
      */
-    private function getStatementRegex()
+    private function getKeywordRegex()
     {     
-        if (!isset($this->regexes['statement'])) {
-            $statements = $this->engine->getStatements();
-            Arrays::sort($statements, $this->comparator, true);
-        
+        if (!isset($this->regexes['keyword'])) {
+            $keywords = $this->engine->getKeywords()->toArray();
+            Arrays::sort($keywords, new LengthComparator());
+
             $patterns = array();
-            foreach ($statements as $statement) {
-                $patterns[] = sprintf('%s(?=[\s\(])', preg_quote($statement->getKeyword(), '/'));
+            foreach ($keywords as $keyword) {
+                $patterns[] = preg_quote($keyword, '/');
             }
             
-            $this->regexes['statement'] = sprintf('/(%s)/A', implode('|', $patterns));
+            $this->regexes['keyword'] = sprintf('/(%s)/A', implode('|', $patterns));
         }
 
-        return $this->regexes['statement'];
+        return $this->regexes['keyword'];
     }
     
     /**
      * Returns a regular expression to match operators from the template engine.
      *
-     * @return string regular expression to match operators.
+     * @return string a regular expression to match operators.
      */
     private function getOperatorRegex()
     {
         if (!isset($this->regexes['operator'])) {
-            $operators = $this->engine->getOperators();
-            Arrays::sort($operators, $this->comparator, true);
+            $symbols = $this->engine->getOperatorSymbols()->toArray();
+            Arrays::sort($symbols, new LengthComparator());
           
             $patterns = array();
-            foreach ($operators as $operator) {
-                $patterns[] = preg_quote($operator->getOperator(), '/');
+            foreach ($symbols as $symbol) {
+                $patterns[] = sprintf('%s', preg_quote($symbol, '/'));
             }
             
             $this->regexes['operator'] = sprintf('/(%s)/A', implode('|', $patterns));
@@ -270,7 +306,7 @@ class Lexer implements LexerInterface, EngineAwareInterface
     /**
      * Returns a regular expression to match tags from the template engine.
      *
-     * @return string regular expression to match tags.
+     * @return string a regular expression to match tags.
      */
     private function getTagRegex()
     {
@@ -284,6 +320,26 @@ class Lexer implements LexerInterface, EngineAwareInterface
         }
 
         return $this->regexes['tag'];
+    }
+    
+    /**
+     * Returns a regular expression to match punctuation and special characters.
+     *
+     * @return string a regular expression to match punctuation and special characters.
+     */
+    private function getPunctutationRegex()
+    {
+        if (!isset($this->regexes['punctuation'])) {
+            $patterns     = array();
+            $punctuations = array_keys($this->punctuations);
+            foreach ($punctuations as $punctuation) {
+                $patterns[] = preg_quote($punctuation, '/');
+            }
+            
+            $this->regexes['punctuation'] = sprintf('/(%s)/A', implode('|', $patterns));
+        }
+        
+        return $this->regexes['punctuation'];
     }
     
     
@@ -319,14 +375,28 @@ class Lexer implements LexerInterface, EngineAwareInterface
     private function reset()
     {
         $this->tagPositions = array();
-        $this->tokens = new SplQueue();
+        $this->tokens       = array();
+    }
+    
+    /**
+     * Set the template engine.
+     *
+     * @param EngineInterface the template engine.
+     */
+    private function setEngine(EngineInterface $engine)
+    {
+        $this->engine = $engine;
     }
     
     /**
      * Push a new token onto a collection of tokens.
+     *
+     * @param mixed $type The token type.
+     * @param mixed $value The value for this token.
+     * @param int $lineNumber (optional) the line number of the value.
      */
-    private function enqueueToken($type, $value = '', $lineNumber = -1)
+    private function pushToken($type, $value = '', $lineNumber = -1)
     {
-        $this->tokens->enqueue(new Token($type, $value, $lineNumber));
+        $this->tokens[] = new Token($type, $value, $lineNumber);
     }
 }
