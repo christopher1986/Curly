@@ -2,11 +2,6 @@
 
 namespace Curly;
 
-use Curly\Collection\ArrayList;
-use Curly\Lang\Operator\Binary\AdditionOperator;
-use Curly\Lang\Statement\ForStatement;
-use Curly\Lang\Statement\DeclarationStatement;
-
 /**
  *
  *
@@ -17,16 +12,37 @@ use Curly\Lang\Statement\DeclarationStatement;
 interface EngineInterface
 {
     /**
-     * Returns a collection of operators.
+     * Returns a set of reserved operator symbols.
      *
-     * @return ListInterface collection of operators.
-     */   
-    public function getOperators();
+     * @return SetInterface a set of operator symbols.
+     */
+    public function getOperatorSymbols();
+
+    /**
+     * Returns a set of reserved keywords.
+     *
+     * @return SetInterface a set of keywords.
+     */
+    public function getKeywords();
     
     /**
-     * Returns a collection of statements.
+     * Returns a lexer to perform lexical analysis on an input string. 
      *
-     * @return ListInterface collection of statements.
+     * @return LexerInterface a lexer.
      */
-    public function getStatements();
+    public function getLexer();
+    
+    /**
+     * Returns a parser to perform syntactical analysis on a sequence of tokens.
+     *
+     * @return ParserInterface a parser.
+     */
+    public function getParser();
+    
+    /**
+     * Returns a library which contains registered filter, operators and tags.
+     *
+     * @return LibraryInterface a library.
+     */
+    public function getLibrary();
 }
