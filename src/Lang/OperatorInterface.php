@@ -2,37 +2,26 @@
 
 namespace Curly\Lang;
 
-use Curly\Collection\Comparator\Comparable;
+use Curly\SubparserInterface;
 
-interface OperatorInterface extends Comparable
+/**
+ * An Operator perfoms an operation on one or more expressions, also known as it's operands.
+ * Most common operators are addition, subtraction, division and multiplication. All operators
+ * have a symbol by which they are identified and a precedence that determines the sequence in
+ * which a collection of operator are evaluated.
+ *
+ * @author Chris Harris 
+ * @version 1.0.0
+ * @since 1.0.0
+ */
+interface OperatorInterface
 {
-    /**
-     * An operator that is grouped from left to right.
-     *
-     * @var string
-     */
-    const ASSOCIATIVITY_LEFT_TO_RIGHT = 'ltr';
-    
-    /**
-     * An operator that is grouped from right to left.
-     *
-     * @var string
-     */
-    const ASSOCIATIVITY_RIGHT_TO_LEFT = 'rtl';
-
-    /**
-     * An operator that has no associativity.
-     *
-     * @var string
-     */
-    const ASSOCIATIVITY_NONE = 'none';
-
     /**
      * Returns the operator phrase or symbol.
      *
      * @return string a phrase or symbol.
      */
-    public function getOperator();
+    public function getSymbol();
     
     /**
      * Returns the operator precedence.
@@ -40,11 +29,4 @@ interface OperatorInterface extends Comparable
      * @return int the precedence.
      */
     public function getPrecedence();
-    
-    /**
-     * Returns the operator associativity.
-     *
-     * @return string the associativity.
-     */
-    public function getAssociativity();
 }
