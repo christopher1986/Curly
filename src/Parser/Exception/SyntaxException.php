@@ -11,9 +11,13 @@ namespace Curly\Parser\Exception;
  */
 class SyntaxException extends \RuntimeException
 {
-    public function __construct($message, $lineNumber = -1, $code = 0, \Exception $previous = null)
+    public function __construct($message, $lineNumber = null, $code = 0, \Exception $previous = null)
     {
-        $errorMsg = sprintf('%s on line: %d', $message, (int) $lineNumber);
+        $errorMsg = $message;
+        if (is_numeric($lineNumber) && $lineNumber > 0) {
+            $errorMsg = sprintf('%s on line: %d', $message, (int) $lineNumber);
+        }
+        
         parent::__construct($errorMsg, $code, $previous);
     }
 }
