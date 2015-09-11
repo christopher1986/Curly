@@ -10,14 +10,7 @@ namespace Curly\Ast;
  * @since 1.0.0
  */
 interface NodeInterface
-{
-    /**
-     * Returns the node type.
-     *
-     * @return string the node type.
-     */
-    public function getType();
-    
+{    
     /**
      * Returns if set the flags for this node.
      *
@@ -29,6 +22,14 @@ interface NodeInterface
     public function getFlags();
     
     /**
+     * Returns true if the specified flags are set for this node.
+     *
+     * @param int $flags one or more flags whose presence will be tested.
+     * @return bool true if the specified flags are set for this node, false otherwise.
+     */
+    public function hasFlags($flags);
+    
+    /**
      * Returns if present the line number. If no line number was provided
      * a negative number is returned.
      * 
@@ -37,9 +38,9 @@ interface NodeInterface
     public function getLineNumber();
     
     /**
-     * Returns a list containing the children of this node.
+     * Returns a collection of child nodes.
      *
-     * @return SetInterface a collection of nodes.
+     * @return Traversable a collection of nodes.
      */
     public function getChildren();
 }
