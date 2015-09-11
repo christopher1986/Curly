@@ -6,7 +6,6 @@ use Curly\Ast\Node;
 use Curly\Ast\Node\Expression\TextNode;
 use Curly\Ast\Node\Expression\VariableNode;
 use Curly\Collection\Stream\TokenStream;
-use Curly\Parser\Exception\IllegalStateException;
 use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\TokenInterface;
 use Curly\Parser\Token;
