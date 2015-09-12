@@ -1,9 +1,9 @@
 <?php
 
-namespace Curly\Lang\Operator\Unary\Arithmetic;
+namespace Curly\Lang\Operator\Unary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\UnaryNode;
+use Curly\Ast\Node\Expression\Unary\NegationNode;
 use Curly\Lang\Operator\AbstractUnaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class NegationOperator extends AbstractUnaryOperator
      */
     public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
     {
-        return new UnaryNode($node, $lineNumber, $flags);
+        return new NegationNode($node, $lineNumber, $flags);
     }
 }
 
