@@ -2,7 +2,7 @@
 
 namespace Curly\Ast\Node\Expression;
 
-use Curly\Ast\Node;
+use Curly\Ast\AbstractNode;
 use Curly\Ast\NodeInterface;
 
 /**
@@ -12,7 +12,7 @@ use Curly\Ast\NodeInterface;
  * @version 1.0.0
  * @since 1.0.0
  */
-class BinaryNode extends Node
+abstract class AbstractBinaryNode extends AbstractNode
 {
     /**
      * Construct a new Binary node.
