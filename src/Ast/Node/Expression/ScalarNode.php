@@ -2,7 +2,8 @@
 
 namespace Curly\Ast\Node\Expression;
 
-use Curly\Ast\Node;
+use Curly\ContextInterface;
+use Curly\Ast\AbstractNode;
 
 /**
  *
@@ -11,7 +12,7 @@ use Curly\Ast\Node;
  * @version 1.0.0
  * @since 1.0.0
  */
-class ScalarNode extends Node
+class ScalarNode extends AbstractNode
 {      
     /**
      * Possible data types.
@@ -40,6 +41,14 @@ class ScalarNode extends Node
     {
         parent::__construct(array(), $lineNumber, $flags);
         $this->setValue($value);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function render(ContextInterface $context)
+    {
+    
     }
     
     /**

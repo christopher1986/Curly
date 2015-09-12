@@ -4,7 +4,8 @@ namespace Curly\Ast\Node;
 
 use SplFixedArray;
 
-use Curly\Ast\Node;
+use Curly\ContextInterface;
+use Curly\Ast\AbstractNode;
 use Curly\Ast\NodeInterface;
 use Curly\Ast\Expression\VariableNode;
 
@@ -15,7 +16,7 @@ use Curly\Ast\Expression\VariableNode;
  * @version 1.0.0
  * @since 1.0.0
  */
-class ForNode extends Node
+class ForNode extends AbstractNode
 {   
     /**
      * The loop variables.
@@ -46,6 +47,14 @@ class ForNode extends Node
         $this->setVariables($loopVars);
         $this->setSequence($sequence);
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function render(ContextInterface $context)
+    {
+    
+    }    
     
     /**
      * Set the loop variables.
@@ -109,7 +118,7 @@ class ForNode extends Node
      * @param mixed $obj the object to test.
      * @return bool true if the specified object is an {@link VariableNode} instance, false otherwise.
      */
-    protected function isVariableNode($obj)
+    private function isVariableNode($obj)
     {
         return (is_object($obj) && $obj instanceof VariableNode);
     }

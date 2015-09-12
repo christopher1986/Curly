@@ -2,7 +2,8 @@
 
 namespace Curly\Ast\Node;
 
-use Curly\Ast\Node;
+use Curly\ContextInterface;
+use Curly\Ast\AbstractNode;
 
 /**
  *
@@ -11,7 +12,7 @@ use Curly\Ast\Node;
  * @version 1.0.0
  * @since 1.0.0
  */
-class TextNode extends Node
+class TextNode extends AbstractNode
 {   
     /**
      * The text.
@@ -31,6 +32,14 @@ class TextNode extends Node
     {
         parent::__construct(array(), $lineNumber, $flags);
         $this->setText($text);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function render(ContextInterface $context)
+    {
+    
     }
     
     /**

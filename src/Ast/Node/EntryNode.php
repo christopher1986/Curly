@@ -2,7 +2,8 @@
 
 namespace Curly\Ast\Node;
 
-use Curly\Ast\Node;
+use Curly\ContextInterface;
+use Curly\Ast\AbstractNode;
 use Curly\Ast\NodeInterface;
 
 /**
@@ -12,7 +13,7 @@ use Curly\Ast\NodeInterface;
  * @version 1.0.0
  * @since 1.0.0
  */
-class EntryNode extends Node
+class EntryNode extends AbstractNode
 {
     /**
      * Construct a new Entry node.
@@ -36,5 +37,13 @@ class EntryNode extends Node
         $children->setSize(2);
         
         return $children;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function render(ContextInterface $context)
+    {
+    
     }
 }

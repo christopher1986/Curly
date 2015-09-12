@@ -2,9 +2,10 @@
 
 namespace Curly\Ast\Node\Expression;
 
-use Curly\Ast\Node;
+use Curly\ContextInterface;
+use Curly\Ast\AbstractNode;
 
-class VariableNode extends Node
+class VariableNode extends AbstractNode
 {
     /**
      * The variable name.
@@ -25,6 +26,14 @@ class VariableNode extends Node
     {
         parent::__construct(array(), $lineNumber, $flags);
         $this->setName($name);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function render(ContextInterface $context)
+    {
+    
     }
     
     /**
