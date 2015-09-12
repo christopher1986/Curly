@@ -11,7 +11,7 @@ use SplFixedArray;
  * @version 1.0.0
  * @since 1.0.0
  */
-class Node implements NodeInterface
+abstract class AbstractNode implements NodeInterface
 {
     /**
      * A bitmask of flags.

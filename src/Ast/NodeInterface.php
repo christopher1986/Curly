@@ -2,6 +2,8 @@
 
 namespace Curly\Ast;
 
+use Curly\ContextInterface;
+
 /**
  * 
  *
@@ -30,8 +32,7 @@ interface NodeInterface
     public function hasFlags($flags);
     
     /**
-     * Returns if present the line number. If no line number was provided
-     * a negative number is returned.
+     * Returns if present the line number, or -1 if no line number was provided.
      * 
      * @return int the line number, defaults to -1.
      */
@@ -43,4 +44,11 @@ interface NodeInterface
      * @return Traversable a collection of nodes.
      */
     public function getChildren();
+    
+    /**
+     * Render this node with the specified context.
+     *
+     * @param ContextInterface $context the template context.
+     */
+    public function render(ContextInterface $context);
 }
