@@ -1,9 +1,9 @@
 <?php
 
-namespace Curly\Lang\Operator\Binary\Logical;
+namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\UnaryNode;
+use Curly\Ast\Node\Expression\Binary\AndNode;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -13,7 +13,7 @@ use Curly\Lang\Operator\AbstractBinaryOperator;
  * @version 1.0.0
  * @since 1.0.0
  */
-class NotOperator extends AbstractBinaryOperator
+class AndOperator extends AbstractBinaryOperator
 {
     /**
      * {@inheritDoc}
@@ -34,9 +34,9 @@ class NotOperator extends AbstractBinaryOperator
     /**
      * {@inheritDoc}
      */
-    public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
+    public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new UnaryNode($node, $lineNumber, $flags);
+        return new AndNode($left, $right, $lineNumber, $flags);
     }
 }
 
