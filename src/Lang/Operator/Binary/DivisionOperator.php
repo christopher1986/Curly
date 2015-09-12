@@ -1,9 +1,9 @@
 <?php
 
-namespace Curly\Lang\Operator\Binary\Arithmetic;
+namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\BinaryNode;
+use Curly\Ast\Node\Expression\Binary\DivisionNode;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,6 +36,6 @@ class DivisionOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new BinaryNode($left, $right, $lineNumber, $flags);
+        return new DivisionNode($left, $right, $lineNumber, $flags);
     }
 }
