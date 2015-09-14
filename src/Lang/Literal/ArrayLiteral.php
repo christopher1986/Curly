@@ -5,8 +5,9 @@ namespace Curly\Lang\Literal;
 use Curly\Ast\Node\Expression\ArrayNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\Lang\LiteralInterface;
-use Curly\Parser\Token;
 use Curly\ParserInterface;
+use Curly\Parser\Token;
+use Curly\Parser\Exception\SyntaxException;
 
 /** 
  *
