@@ -39,7 +39,7 @@ interface LibraryInterface
     public function getFilters();
     
     /**
-     * Add a new filter with the specified name.
+     * Add a new tag with the specified name.
      *
      * @param mixed $name the name associated with the tag.
      * @param TagInterface $tag the tag to add.
