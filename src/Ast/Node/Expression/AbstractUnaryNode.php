@@ -1,8 +1,8 @@
 <?php
 
-namespace Curly\Ast\Node\Expression;
+namespace Curly\Ast\Node\Expression\Unary;
 
-use Curly\Ast\Node;
+use Curly\Ast\AbstractNode;
 use Curly\Ast\NodeInterface;
 
 /**
@@ -12,7 +12,7 @@ use Curly\Ast\NodeInterface;
  * @version 1.0.0
  * @since 1.0.0
  */
-class UnaryNode extends Node
+abstract class AbstractUnaryNode extends AbstractNode
 {
     /**
      * Construct a new Unary node.
