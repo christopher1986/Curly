@@ -3,6 +3,7 @@
 namespace Curly\Lang\Tag;
 
 use Curly\Collection\Stream\TokenStream;
+use Curly\Lang\TagInterface;
 use Curly\ParserInterface;
 
 /**
@@ -12,14 +13,14 @@ use Curly\ParserInterface;
  * @version 1.0.0
  * @since 1.0.0
  */
-class PrintTag extends AbstractTag
+class PrintTag implements TagInterface
 {    
     /**
      * {@inheritDoc}
      */    
-    public function getTags()
+    public function getTag()
     {
-        return array('print');
+        return 'print';
     }
     
     /**
