@@ -10,18 +10,25 @@ use Curly\Lang\Literal\FloatLiteral;
 use Curly\Lang\Literal\IntegerLiteral;
 use Curly\Lang\Literal\NullLiteral;
 use Curly\Lang\Literal\StringLiteral;
-use Curly\Lang\Operator\Binary\Arithmetic\AdditionOperator;
-use Curly\Lang\Operator\Binary\Arithmetic\DivisionOperator;
-use Curly\Lang\Operator\Binary\Arithmetic\MultiplicationOperator;
-use Curly\Lang\Operator\Binary\Arithmetic\RemainderOperator;
-use Curly\Lang\Operator\Binary\Arithmetic\SubtractionOperator;
-use Curly\Lang\Operator\Binary\Membership\InOperator;
-use Curly\Lang\Operator\Binary\Membership\NotInOperator;
-use Curly\Lang\Operator\Unary\Arithmetic\NegationOperator;
-use Curly\Lang\Operator\Unary\Arithmetic\PlusOperator;
-use Curly\Lang\Operator\Unary\Logical\NotOperator;
-use Curly\Lang\Tag\AssignmentTag;
-use Curly\Lang\Tag\DeclarationTag;
+use Curly\Lang\Operator\Binary\AdditionOperator;
+use Curly\Lang\Operator\Binary\AndOperator;
+use Curly\Lang\Operator\Binary\AssignmentOperator;
+use Curly\Lang\Operator\Binary\DivisionOperator;
+use Curly\Lang\Operator\Binary\EqualOperator;
+use Curly\Lang\Operator\Binary\GreaterEqualOperator;
+use Curly\Lang\Operator\Binary\GreaterOperator;
+use Curly\Lang\Operator\Binary\InOperator;
+use Curly\Lang\Operator\Binary\LessEqualOperator;
+use Curly\Lang\Operator\Binary\LessOperator;
+use Curly\Lang\Operator\Binary\MultiplicationOperator;
+use Curly\Lang\Operator\Binary\NotEqualOperator;
+use Curly\Lang\Operator\Binary\NotInOperator;
+use Curly\Lang\Operator\Binary\OrOperator;
+use Curly\Lang\Operator\Binary\RemainderOperator;
+use Curly\Lang\Operator\Binary\SubtractionOperator;
+use Curly\Lang\Operator\Unary\NegationOperator;
+use Curly\Lang\Operator\Unary\PlusOperator;
+use Curly\Lang\Operator\Unary\NotOperator;
 use Curly\Lang\Tag\ForTag;
 use Curly\Lang\Tag\IfTag;
 use Curly\Lang\Tag\PrintTag;
@@ -70,7 +77,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
      */
     public function getOperatorSymbols()
     {
-        $library = $this->getLibrary();
+        $library   = $this->getLibrary();
         $operators = $library->getUnaryOperators();
         $operators->addAll($library->getBinaryOperators());
         
@@ -80,22 +87,6 @@ final class Engine implements EngineInterface, LibraryAwareInterface
         }
         
         return $symbols;
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public function getKeywords()
-    {
-        $library  = $this->getLibrary();
-        $keywords = new HashSet();
-        
-        $tags = $library->getTags();
-        foreach ($tags as $tag) {
-            $keywords->addAll($tag->getTags());
-        }
-        
-        return $keywords;
     }
     
     /**
@@ -149,8 +140,6 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultTags()
     {
         $tags = array(
-            new AssignmentTag(),
-            new DeclarationTag(),
             new ForTag(),
             new IfTag(),
             new PrintTag(),
@@ -190,12 +179,21 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     {
         $operators = array(
             new AdditionOperator(),
+            new AndOperator(),
+            new AssignmentOperator(),
             new DivisionOperator(),
+            new EqualOperator(),
+            new GreaterEqualOperator(),
+            new GreaterOperator(),
+            new InOperator(),
+            new LessEqualOperator(),
+            new LessOperator(),
             new MultiplicationOperator(),
+            new NotEqualOperator(),
+            new NotInOperator(),
+            new OrOperator(),
             new RemainderOperator(),
             new SubtractionOperator(),
-            new InOperator(),
-            new NotInOperator(),
             new NegationOperator(),
             new PlusOperator(),
             new NotOperator()
