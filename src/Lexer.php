@@ -97,10 +97,11 @@ class Lexer implements LexerInterface
      * @var array
      */
     private $regexes = array(
-        'number'      => '/([0-9]+(?:\.[0-9]+)?)/A',
-        'string'      => '/([\'"])(.*?)(?<!\\\)\1/As',
-        'literal'     => '/(true|false|null)\b/Ai',
-        'identifier'  => '/([a-z_\x7f-\xff]{1}[a-z0-9_\x7f-\xff]*)/Ai',
+        'literal'    => '/(true|false|null)\b/Ai',
+        'number'     => '/([0-9]+(?:\.[0-9]+)?)/A',
+        'string'     => '/([\'"])(.*?)(?<!\\\)\1/As',
+        'identifier' => '/([a-z_\x7f-\xff]{1}[a-z0-9_\x7f-\xff]*)/Ai',
+        'variable'   => '/\$([a-z_\x7f-\xff]{1}[a-z0-9_\x7f-\xff]*)/Ai',
     );
 
     /**
@@ -183,8 +184,7 @@ class Lexer implements LexerInterface
      * string      ::= ['"] text ['"]
      * boolean     ::= true | false
      * null        ::= null
-     * keyword     ::= "const" | "var" | "for" | "endfor" | "if" | "elseif" | "else" | "endif" | "print"
-     * operator    ::= "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" | "==" | "!=" | "or" | "and" | "not"
+     * symbols     ::= "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" | "==" | "!=" | "or" | "and" | "not"
      * punctuation ::= "[" | "]" | "(" | ")" | "{" | "}" | "." | "," | "|" | ";" | ":" | "="
      */
     private function tokenizeLang()
@@ -208,12 +208,8 @@ class Lexer implements LexerInterface
             if ($matches[1] === $this->tags['close']) {
                 $this->state = self::STATE_TEXT;
             }
-        } 
-        // statements
-        else if ($this->reader->matches($this->getKeywordRegex(), $matches)) {
-            $this->pushToken(Token::T_KEYWORD, $matches[1], $this->reader->getLineNumber());
-        } 
-        // operators
+        }
+        // operator symbols
         else if ($this->reader->matches($this->getOperatorRegex(), $matches)) {
             $this->pushToken(Token::T_OPERATOR, $matches[1], $this->reader->getLineNumber());
         } 
@@ -237,10 +233,14 @@ class Lexer implements LexerInterface
                 $this->pushToken(Token::T_FLOAT, $matches[1], $this->reader->getLineNumber());
             }
         } 
+        // variables
+        else if ($this->reader->matches($this->regexes['variable'], $matches)) {
+            $this->pushToken(Token::T_VARIABLE, $matches[1], $this->reader->getLineNumber());
+        }
         // identifiers
         else if ($this->reader->matches($this->regexes['identifier'], $matches)) {
             $this->pushToken(Token::T_IDENTIFIER, $matches[1], $this->reader->getLineNumber());
-        } 
+        }
         // punctuation
         else if ($this->reader->matches($this->getPunctutationRegex(), $matches)) {
             $value = $matches[1];
@@ -260,47 +260,29 @@ class Lexer implements LexerInterface
     }
     
     /**
-     * Returns a regular expression to match reserved symbols or words from the template engine.
-     *
-     * @return string a regular expression to match words.
-     */
-    private function getKeywordRegex()
-    {     
-        if (!isset($this->regexes['keyword'])) {
-            $keywords = $this->engine->getKeywords()->toArray();
-            Arrays::sort($keywords, new LengthComparator());
-
-            $patterns = array();
-            foreach ($keywords as $keyword) {
-                $patterns[] = preg_quote($keyword, '/');
-            }
-            
-            $this->regexes['keyword'] = sprintf('/(%s)/A', implode('|', $patterns));
-        }
-
-        return $this->regexes['keyword'];
-    }
-    
-    /**
      * Returns a regular expression to match operators from the template engine.
      *
      * @return string a regular expression to match operators.
      */
     private function getOperatorRegex()
     {
-        if (!isset($this->regexes['operator'])) {
+        if (!isset($this->regexes['symbols'])) {
             $symbols = $this->engine->getOperatorSymbols()->toArray();
             Arrays::sort($symbols, new LengthComparator());
           
             $patterns = array();
             foreach ($symbols as $symbol) {
-                $patterns[] = sprintf('%s', preg_quote($symbol, '/'));
+                if (ctype_alpha($symbol)) {
+                    $patterns[] = sprintf('%s\b', preg_quote($symbol, '/'));
+                } else {
+                    $patterns[] = preg_quote($symbol, '/');
+                }
             }
             
-            $this->regexes['operator'] = sprintf('/(%s)/A', implode('|', $patterns));
+            $this->regexes['symbols'] = sprintf('/(%s)/A', implode('|', $patterns));
         }
 
-        return $this->regexes['operator'];
+        return $this->regexes['symbols'];
     }
     
     /**
