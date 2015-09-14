@@ -7,8 +7,8 @@ use Curly\Ast\Node\Expression\DictionaryNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
-use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\Token;
+use Curly\Parser\Exception\SyntaxException;
 
 /** 
  *
@@ -25,19 +25,6 @@ class DictionaryLiteral implements LiteralInterface
      * @var ParserInterface
      */
     protected $parser;
-
-    /**
-     * A collection of valid key types.
-     * 
-     * @var array
-     */
-    protected $types = array(
-        Token::T_FLOAT, 
-        Token::T_IDENTIFIER, 
-        Token::T_INTEGER, 
-        Token::T_OPEN_PARENTHESIS,
-        Token::T_STRING
-    );
 
     /**
      * {@inheritDoc}
@@ -81,7 +68,7 @@ class DictionaryLiteral implements LiteralInterface
     {
         if (!$stream->valid()) {
             throw new SyntaxException('Unexpected end of file.');   
-        } else if (!call_user_func_array(array($stream, 'matches'), $this->types)) {
+        } else if (!$stream->matches(Token::T_FLOAT, Token::T_IDENTIFIER, Token::T_INTEGER, Token::T_OPEN_PARENTHESIS, Token::T_STRING)) {
             throw new SyntaxException(sprintf('Cannot find symbol "%s".', $stream->current()->getValue()), $stream->current()->getLineNumber());
         }
         
