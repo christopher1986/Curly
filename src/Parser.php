@@ -3,7 +3,8 @@
 namespace Curly;
 
 use Curly\Ast\Node;
-use Curly\Ast\Node\Expression\TextNode;
+use Curly\Ast\NodeInterface;
+use Curly\Ast\Node\TextNode;
 use Curly\Ast\Node\Expression\VariableNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\Parser\Exception\SyntaxException;
@@ -46,40 +47,46 @@ class Parser implements ParserInterface
      * {@inheritDoc}
      */
     public function parse(TokenStream $stream, $until = null)
-    {    
+    {   
         if (func_get_args() >= 2) {
             $until = (is_array($until)) ? $until : array_slice(func_get_args(), 1);
         }
     
         $this->setStream($stream);
 
-        $nodes = array();
+        $library = $this->getLibrary();
+        $nodes   = array();
         while ($stream->valid()) {            
             if ($until && $stream->matches($until)) {
                 return $nodes;
             }
-        
+            
             $token = $stream->current();
             if ($stream->matches(Token::T_TEXT)) {
                 $stream->consume();
                 $nodes[] = new TextNode($token->getValue(), $token->getLineNumber());
             } else if ($stream->matches(Token::T_OPEN_TAG, Token::T_CLOSE_TAG)) {
-                $stream->consume();            
-            } else if ($stream->matches(Token::T_KEYWORD)) {
-                $tag = $this->getLibrary()->getTag($token->getValue());
-                if ($tag === null) {
-                    throw new SyntaxException(sprintf('Encountered an unexpected keyword "%s".', $token->getValue()), $token->getLineNumber());
+                $stream->consume();
+            } else if ($stream->matches(Token::T_IDENTIFIER)) {
+                if ($tag = $library->getTag($token->getValue())) {
+                    $nodes[] = $tag->parse($this, $this->getStream());
+                } else {
+                    throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), $token->getLiteral($token->getType())), $token->getLineNumber());
                 }
-
-                $nodes[] = $tag->parse($this, $this->getStream());
             } else {
-                $substream = $stream->until(function($token) {
-                    return (in_array($token->getType(), array(Token::T_SEMICOLON, Token::T_CLOSE_TAG)));
-                });
-                $nodes[] = $this->parseExpression($substream);
+                $nodes[] = $this->parseExpression($stream);
+                $stream->expects(Token::T_SEMICOLON, Token::T_CLOSE_TAG);
+            }
+            
+            // avoid an infinite loop.
+            if ($stream->current() === $token) {
+                $stream->consume();
             }
         }
-
+        
+        echo '<pre>';
+        var_dump($nodes);
+        
         return $nodes;
     }
     
@@ -92,7 +99,7 @@ class Parser implements ParserInterface
      * @return NodeInterface an expression node.
      */
     public function parseExpression(TokenStream $stream, $precedence = 0)
-    {    
+    {
         $expr = $this->parsePrimaryExpression($stream);
         
         while (($token = $stream->current()) && $this->isBinary($token)) {           
@@ -104,7 +111,7 @@ class Parser implements ParserInterface
             $stream->consume();
 
             /*
-             * Apply recursion as long as the next binary operator
+             * apply recursion as long as the next binary operator
              * has a higher precedence than the current one. 
              */
             $expr = $operator->createNode($expr, $this->parseExpression($stream,
@@ -149,14 +156,56 @@ class Parser implements ParserInterface
             $literal = $this->getLiteral($token);
             if ($literal) {
                 $node = $literal->parse($this, $stream);
-            } else if ($stream->matches(Token::T_IDENTIFIER)) {                
+            } else if ($stream->matches(Token::T_VARIABLE)) {                
                 $node = new VariableNode($token->getValue(), $token->getLineNumber());
                 $stream->consume();
             } else {
                 throw new SyntaxException(sprintf('Illegal identifier "%s".', $token->getValue()), $token->getLineNumber());
             }
+            
+            if ($stream->matches(Token::T_PIPELINE)) {
+                $node = $this->parseFilterExpression($stream, $node);
+            }
         } else {
             throw new SyntaxException(sprintf('Cannot find symbol "%s".', $token->getValue()), $token->getLineNumber());
+        }
+        
+        return $node;
+    }
+    
+    /**
+     * Parse a filter expression.
+     *
+     * A filter expression is one where a variable or literal node is suffixed with one or more pipelines.
+     * The following code snippet shows a string literal being made lowercase using the lower filter.
+     *
+     * <code>
+     *     name = "JOHN"|lower;
+     * </code>
+     *
+     * @param TokenStream a stream of tokens to parse.
+     * @param NodeInterface the node to which a filter is applied.
+     * @return NodeInterface a filtered expression node.
+     */
+    private function parseFilterExpression($stream, NodeInterface $node)
+    {
+        $token = $stream->current();
+        if (!$stream->matches(Token::T_PIPELINE)) {
+            $lineno = ($token) ? $token->getLineNumber() : -1;
+            throw new SyntaxException('Expected ")"', $lineno);
+        }
+        
+        while ($stream->matches(Token::T_PIPELINE)) {
+            $stream->consume();
+            $token = $stream->expects(Token::T_IDENTIFIER);
+            
+            if ($stream->matches(Token::T_OPEN_PARENTHESIS)) {
+                $stream->consume();
+                $params = $this->parseExpression($stream);
+                echo '<pre>';
+                var_dump($params);
+                $stream->expects(Token::T_CLOSE_PARENTHESIS);
+            }
         }
         
         return $node;
