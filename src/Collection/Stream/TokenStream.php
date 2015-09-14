@@ -138,6 +138,10 @@ class TokenStream implements StreamInterface
      */
     public function matches($types)
     {
+        if (!$this->valid()) {
+            return false;
+        }
+                
         $types = (is_array($types)) ? $types : func_get_args();
 
         $token = $this->current();
@@ -165,6 +169,10 @@ class TokenStream implements StreamInterface
      */
     public function expects($types)
     {
+        if (!$this->valid()) {
+            throw new SyntaxException('Unexpected end of file.');
+        }
+    
         $types = (is_array($types)) ? $types : func_get_args();
     
         if (!$this->matches($types)) {
@@ -177,7 +185,7 @@ class TokenStream implements StreamInterface
             
             $message = sprintf('Expected one of the following ("%s").', implode('", "', $names));
             if ($this->valid()) {
-                throw new SyntaxException($message, $this->current()->getLineNumber());
+                throw new SyntaxException($message, $token->getLineNumber());
             } else {
                 throw new SyntaxException($message);
             }
