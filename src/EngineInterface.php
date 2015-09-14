@@ -17,13 +17,6 @@ interface EngineInterface
      * @return SetInterface a set of operator symbols.
      */
     public function getOperatorSymbols();
-
-    /**
-     * Returns a set of reserved keywords.
-     *
-     * @return SetInterface a set of keywords.
-     */
-    public function getKeywords();
     
     /**
      * Returns a lexer to perform lexical analysis on an input string. 
