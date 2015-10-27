@@ -19,6 +19,13 @@ class Stream implements StreamInterface
     private $elements = array();
     
     /**
+     * The number of elements contained within the stream.
+     *
+     * @var int
+     */
+    private $size = 0;
+    
+    /**
      * An internal pointer.
      *
      * @var int
@@ -33,6 +40,7 @@ class Stream implements StreamInterface
     public function __construct(array $elements = array())
     {
         $this->elements = $elements;
+        $this->size     = count($elements);
     }
 
     /**
@@ -40,12 +48,7 @@ class Stream implements StreamInterface
      */
     public function current()
     {
-        $element = null;
-        if ($this->valid()) {
-            $element = $this->elements[$this->index];
-        }
-        
-        return $element;
+        return (isset($this->elements[$this->index])) ? $this->elements[$this->index] : null;
     }
      
     /**
@@ -53,7 +56,7 @@ class Stream implements StreamInterface
      */
     public function valid()
     {
-        return ($this->index < $this->count());
+        return ($this->index < $this->size);
     }
     
     /**
@@ -121,7 +124,7 @@ class Stream implements StreamInterface
         $collection = array();
         $index      = $this->index;
 
-        for ($index; $index < $this->count(); $index++) {
+        for ($index; $index < $this->size; $index++) {
             $collection[] = $this->elements[$index];
             if ($predicate($this->elements[$index])) {
                 break;
@@ -149,7 +152,7 @@ class Stream implements StreamInterface
             }
         }
         
-        return new Stream($collection);
+        return new self($collection);
     }
     
     /**
@@ -171,7 +174,7 @@ class Stream implements StreamInterface
             ));  
         }
     
-        $length = ($size < $this->count()) ? $size : null;
+        $length = ($size < $this->size) ? $size : null;
         $collection = array_slice($this->elements, 0, $length);
         
         return new Stream($collection);
@@ -192,6 +195,6 @@ class Stream implements StreamInterface
      */
     public function count()
     {
-        return count($this->elements);
+        return $this->size;
     }
 }

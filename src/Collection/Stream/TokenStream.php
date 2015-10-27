@@ -2,6 +2,7 @@
 
 namespace Curly\Collection\Stream;
 
+use Curly\Parser\Token;
 use Curly\Parser\TokenInterface;
 use Curly\Parser\Exception\SyntaxException;
 
@@ -58,12 +59,7 @@ class TokenStream implements StreamInterface
      */ 
     public function consumeIf($types)
     {
-        $token = null;
-        if ($this->matches($types)) {
-            $token = $this->stream->consume();
-        }
-        
-        return $token;
+        return ($this->matches($types)) ? $this->consume() : null;
     }
     
     /**
@@ -168,11 +164,7 @@ class TokenStream implements StreamInterface
      * @see TokenStream::matches($types);
      */
     public function expects($types)
-    {
-        if (!$this->valid()) {
-            throw new SyntaxException('Unexpected end of file.');
-        }
-    
+    {    
         $types = (is_array($types)) ? $types : func_get_args();
     
         if (!$this->matches($types)) {
@@ -180,14 +172,14 @@ class TokenStream implements StreamInterface
             $names = array();
             foreach ($types as $type) {
                 list($type, $value) = array_pad(explode(':', $type), 2, null);
-                $names[] = $token->getLiteral($type);
+                $names[] = Token::getLiteral($type);
             }
             
             $message = sprintf('Expected one of the following ("%s").', implode('", "', $names));
             if ($this->valid()) {
                 throw new SyntaxException($message, $token->getLineNumber());
             } else {
-                throw new SyntaxException($message);
+                throw new SyntaxException('Unexpected end of file');
             }
         }
         
