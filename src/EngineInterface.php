@@ -38,4 +38,12 @@ interface EngineInterface
      * @return LibraryInterface a library.
      */
     public function getLibrary();
+    
+    /**
+     * Returns a {@link TemplateInterface} instance for the specified input.
+     *
+     * @param string $input the input for which to load a template.
+     * @return TemplateInterface the template for the specified input.
+     */
+    public function loadTemplate($input);
 }

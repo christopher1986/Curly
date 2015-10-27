@@ -3,6 +3,8 @@
 namespace Curly;
 
 use Curly\Collection\HashSet;
+use Curly\Io\Stream\OutputStream;
+use Curly\Io\Stream\PrintStream;
 use Curly\Lang\Literal\ArrayLiteral;
 use Curly\Lang\Literal\BooleanLiteral;
 use Curly\Lang\Literal\DictionaryLiteral;
@@ -26,12 +28,15 @@ use Curly\Lang\Operator\Binary\NotInOperator;
 use Curly\Lang\Operator\Binary\OrOperator;
 use Curly\Lang\Operator\Binary\RemainderOperator;
 use Curly\Lang\Operator\Binary\SubtractionOperator;
+use Curly\Lang\Operator\Unary\MinusOperator;
 use Curly\Lang\Operator\Unary\NegationOperator;
 use Curly\Lang\Operator\Unary\PlusOperator;
-use Curly\Lang\Operator\Unary\NotOperator;
+use Curly\Lang\Operator\Unary\TypeofOperator;
 use Curly\Lang\Tag\ForTag;
 use Curly\Lang\Tag\IfTag;
 use Curly\Lang\Tag\PrintTag;
+use Curly\Loader\StringLoader;
+use Curly\Parser\Exception\TemplateNotFoundException;
 
 /**
  *
@@ -43,10 +48,25 @@ use Curly\Lang\Tag\PrintTag;
 final class Engine implements EngineInterface, LibraryAwareInterface
 {    
     /**
+     * Default PHP output stream.
+     *
+     * @var StreamInterface
+     */
+    private static $out = null;
+
+    /**
      * A template library.
      *
+     * @var LibraryInterface
      */
     private $library = null;
+    
+    /**
+     * A template loader.
+     *
+     * @var LoaderInterface
+     */
+    private $loader = null;
     
     /**
      * A lexer to tokenize an input string.
@@ -133,6 +153,63 @@ final class Engine implements EngineInterface, LibraryAwareInterface
         return $this->library;
     }
     
+    /**
+     * Set a {@link LoaderInterface} instance used with which load one or more templates.
+     *
+     * @param LoaderInterface $loader the loader with which to load templates.
+     */
+    public function setLoader(LoaderInterface $loader)
+    {
+        $this->loader = $loader;
+    }
+    
+    /**
+     * Returns a {@link LoaderInterface} instance used to load one or more templates.
+     *
+     * @return LoaderInterface a template loader.
+     */
+    public function getLoader()
+    {
+        if ($this->loader === null) {
+            $this->loader = new StringLoader();
+        }
+    
+        return $this->loader;
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @throws TemplateNotFoundException a template could not be instantiated with the specified input.
+     * @throws InvalidArgumentException if the specified argument is not a string.
+     */
+    public function loadTemplate($input)
+    {
+        $loader  = $this->getLoader();
+        $content = $loader->load($input);
+        
+        if ($content === null) {
+            throw new TemplateNotFoundException('unable to load template with the specified input');
+        }
+        
+        return new Template($content, $this);
+    }
+    
+    /**
+     * Returns {@link PrintStream} instance that decorates a read-write stream which stores 
+     * temporary data in a file-like manner. Use the {@link PrintStream::toString()} method 
+     * to read data stored by the underlying output stream.
+     *
+     * @return PrintStream the stream to which data will be written.
+     */
+    public static function out()
+    {
+        if (self::$out === null) {
+            self::$out = new PrintStream(new OutputStream());
+        }
+        
+        return self::$out;
+    }
 
     /**
      * Register default tags with library.
@@ -147,7 +224,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
         
         $library = $this->getLibrary();
         foreach ($tags as $tag) {
-            $library->registerTag($tag->getTag(), $tag);
+            $library->registerTag($tag->getName(), $tag);
         }
     }
     
@@ -194,9 +271,10 @@ final class Engine implements EngineInterface, LibraryAwareInterface
             new OrOperator(),
             new RemainderOperator(),
             new SubtractionOperator(),
+            new MinusOperator(),
             new NegationOperator(),
             new PlusOperator(),
-            new NotOperator()
+            new TypeofOperator(),
         );
         
         $library = $this->getLibrary();
