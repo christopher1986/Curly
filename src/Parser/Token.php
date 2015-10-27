@@ -196,11 +196,11 @@ class Token implements TokenInterface
     /**
      * {@inheritDoc}
      */
-    public function getLiteral($type, $strict = false)
+    public static function getLiteral($type, $strict = false)
     {
         static $reflClass;
         if ($reflClass === null) {
-            $reflClass = new ReflectionClass($this);
+            $reflClass = new ReflectionClass(get_called_class());
         }
         
         $constants = $reflClass->getConstants();

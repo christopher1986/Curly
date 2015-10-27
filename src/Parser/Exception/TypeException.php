@@ -1,4 +1,4 @@
-<?php
+<?php 
 /**
  * Copyright (c) 2015, Chris Harris.
  * All rights reserved.
@@ -40,16 +40,16 @@
 namespace Curly\Parser\Exception;
 
 /**
- * Thrown to indicate a syntax error was encountered.
+ * Thrown to indicate that the provided variable is the incorrect type, such as providing an integer when an array is required.
  *
- * @author Chris Harris
+ * @author Chris Harris <c.harris@hotmail.com>
  * @version 1.0.0
  * @since 1.0.0
  */
-class SyntaxException extends \LogicException
+class TypeException extends \RuntimeException
 {
     /**
-     * Construct a new SyntaxException.
+     * Construct a new TypeException.
      *
      * @param string $message the Exception message to throw.
      * @param int $lineNumber (optional) the line number on which the exception occurred.

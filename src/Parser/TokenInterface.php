@@ -15,8 +15,8 @@
  *     the documentation and/or other materials provided with the
  *     distribution.
  *
- *   * Neither the name of the copyright holder nor the names of its 
- *     contributors may be used to endorse or promote products derived 
+ *   * Neither the name of the copyright holder nor the names of its
+ *     contributors may be used to endorse or promote products derived
  *     from this software without specific prior written permission.
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
@@ -44,7 +44,7 @@ use Curly\Common\EquatableInterface;
 /**
  * The TokenInterface describes the methods that allows a token to store a value and to identify itself.
  *
- * A token is created during the process of lexical analysis (tokenization). Lexical analysis is 
+ * A token is created during the process of lexical analysis (tokenization). Lexical analysis is
  * the process of converting a sequence of characters into a sequence of tokens.
  *
  * @author Chris Harris <c.harris@hotmail.com>
@@ -63,7 +63,7 @@ interface TokenInterface extends EquatableInterface
      * Returns the value stored by this token.
      *
      * Although the value stored by a token can be of any type, it's most likely that a token
-     * will store a sequence of characters found through a process known as tokenization. 
+     * will store a sequence of characters found through a process known as tokenization.
      *
      * @return mixed the value stored by this token.
      */
@@ -83,5 +83,5 @@ interface TokenInterface extends EquatableInterface
      * @param bool $strict determines whether strict comparison is required, defaults to false.
      * @return string|null the literal name for the specified token type, or null on failure.
      */
-    public function getLiteral($type, $strict = false);
+    public static function getLiteral($type, $strict = false);
 }

@@ -40,16 +40,16 @@
 namespace Curly\Parser\Exception;
 
 /**
- * Thrown to indicate a syntax error was encountered.
+ * Thrown to indicate that a key is out of range or undefined.
  *
- * @author Chris Harris
+ * @author Chris Harris <c.harris@hotmail.com>
  * @version 1.0.0
  * @since 1.0.0
  */
-class SyntaxException extends \LogicException
+class KeyException extends \RuntimeException
 {
     /**
-     * Construct a new SyntaxException.
+     * Construct a new KeyException.
      *
      * @param string $message the Exception message to throw.
      * @param int $lineNumber (optional) the line number on which the exception occurred.
