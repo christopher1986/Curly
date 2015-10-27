@@ -322,7 +322,7 @@ class StringReader extends AbstractReader
     {
         if (!is_string($string)) {
             throw new \InvalidArgumentException(sprintf(
-                '%s: expects a string as argument; received "%s"',
+                '%s: expects a string argument; received "%s"',
                 __METHOD__,
                 (is_object($string) ? get_class($string) : gettype($string))
             ));
