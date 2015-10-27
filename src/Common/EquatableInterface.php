@@ -52,7 +52,7 @@ interface EquatableInterface
      * Indicates whether this object is considered equal to the given object.
      *
      * @param mixed $obj the object for which equality should be tested.
-     * @return bool true if this object is equal to the given object, false otherwise.
+     * @return bool true if this object is equal to the specified object, false otherwise.
      */
     public function equals($obj);
 }
