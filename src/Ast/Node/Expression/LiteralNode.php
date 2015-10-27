@@ -3,7 +3,8 @@
 namespace Curly\Ast\Node\Expression;
 
 use Curly\ContextInterface;
-use Curly\Ast\AbstractNode;
+use Curly\Ast\Node;
+use Curly\Io\Stream\OutputStreamInterface;
 
 /**
  *
@@ -12,7 +13,7 @@ use Curly\Ast\AbstractNode;
  * @version 1.0.0
  * @since 1.0.0
  */
-class LiteralNode extends AbstractNode
+class LiteralNode extends Node
 {   
     /**
      * The value.
@@ -37,9 +38,9 @@ class LiteralNode extends AbstractNode
     /**
      * {@inheritDoc}
      */
-    public function render(ContextInterface $context)
+    public function render(ContextInterface $context, OutputStreamInterface $out)
     {
-    
+        return $this->getValue();
     }
     
     /**

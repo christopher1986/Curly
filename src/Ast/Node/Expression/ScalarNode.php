@@ -3,7 +3,8 @@
 namespace Curly\Ast\Node\Expression;
 
 use Curly\ContextInterface;
-use Curly\Ast\AbstractNode;
+use Curly\Ast\Node;
+use Curly\Io\Stream\OutputStreamInterface;
 
 /**
  *
@@ -12,16 +13,16 @@ use Curly\Ast\AbstractNode;
  * @version 1.0.0
  * @since 1.0.0
  */
-class ScalarNode extends AbstractNode
+class ScalarNode extends Node
 {      
     /**
      * Possible data types.
      */
-    const TYPE_INTEGER = 0x0001;
-    const TYPE_FLOAT   = 0x0002;
-    const TYPE_BOOLEAN = 0x0004;
-    const TYPE_STRING  = 0x0008;
-    const TYPE_MIXED   = 0x0010;
+    const TYPE_INTEGER = 0x01;
+    const TYPE_FLOAT   = 0x02;
+    const TYPE_BOOLEAN = 0x04;
+    const TYPE_STRING  = 0x08;
+    const TYPE_MIXED   = 0x10;
 
     /**
      * The value.
@@ -46,9 +47,9 @@ class ScalarNode extends AbstractNode
     /**
      * {@inheritDoc}
      */
-    public function render(ContextInterface $context)
+    public function render(ContextInterface $context, OutputStreamInterface $out)
     {
-    
+        return $this->getValue();
     }
     
     /**

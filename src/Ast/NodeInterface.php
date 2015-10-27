@@ -3,6 +3,7 @@
 namespace Curly\Ast;
 
 use Curly\ContextInterface;
+use Curly\Io\Stream\OutputStreamInterface;
 
 /**
  * 
@@ -49,6 +50,7 @@ interface NodeInterface
      * Render this node with the specified context.
      *
      * @param ContextInterface $context the template context.
+     * @param OutputStreamInterface $out the output stream.
      */
-    public function render(ContextInterface $context);
+    public function render(ContextInterface $context, OutputStreamInterface $out);
 }

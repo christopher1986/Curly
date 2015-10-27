@@ -3,9 +3,11 @@
 namespace Curly\Ast\Node\Expression;
 
 use Curly\ContextInterface;
-use Curly\Ast\AbstractNode;
+use Curly\Ast\Node;
+use Curly\Io\Stream\OutputStreamInterface;
+use Curly\Parser\Exception\ReferenceException;
 
-class VariableNode extends AbstractNode
+class VariableNode extends Node
 {
     /**
      * The variable name.
@@ -30,10 +32,27 @@ class VariableNode extends AbstractNode
     
     /**
      * {@inheritDoc}
+     *
+     * @throws ReferenceException if the variable does not exist within the specified context.
      */
-    public function render(ContextInterface $context)
+    public function render(ContextInterface $context, OutputStreamInterface $out)
     {
-    
+        $name = $this->getName();
+        if (!$context->offsetExists($name)) {
+            throw new ReferenceException(sprintf('name "%s" is not defined', $name), $this->getLineNumber());
+        }
+
+        return $context[$name];
+    }
+
+    /**
+     * Returns the name for this variable.
+     *
+     * @return string the name for this variable.
+     */
+    public function getName()
+    {
+        return $this->name;
     }
     
     /**
@@ -53,15 +72,5 @@ class VariableNode extends AbstractNode
         }
     
         $this->name = $name;
-    }
-    
-    /**
-     * Returns the name for this variable.
-     *
-     * @return string the name for this variable.
-     */
-    private function getName()
-    {
-        return $this->name;
     }
 }

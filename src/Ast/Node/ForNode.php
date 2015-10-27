@@ -3,27 +3,31 @@
 namespace Curly\Ast\Node;
 
 use SplFixedArray;
+use Traversable;
 
 use Curly\ContextInterface;
-use Curly\Ast\AbstractNode;
+use Curly\TemplateContext;
+use Curly\Ast\Node;
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Expression\VariableNode;
+use Curly\Ast\Node\Expression\VariableNode;
+use Curly\Parser\Exception\SyntaxException;
+use Curly\Io\Stream\OutputStreamInterface;
 
 /**
- *
+ * The ForNode is responsible for rendering a for loop statement.
  *
  * @author Chris Harris
  * @version 1.0.0
  * @since 1.0.0
  */
-class ForNode extends AbstractNode
+class ForNode extends Node
 {   
     /**
      * The loop variables.
      *
-     * @var SplFixedArray
+     * @var array
      */
-    private $loopVars;
+    private $variables = array();
 
     /**
      * A sequence of elements to iterate over.
@@ -33,63 +37,111 @@ class ForNode extends AbstractNode
     private $sequence;
     
     /**
-     * Construct a new Text node.
+     * Construct a new For node.
      *
-     * @param array $loopVars a collection containing the loop variables.
-     * @param NodeInterface a sequence of elements to iterate over.
+     * @param array $variables a collection containing loop variables.
+     * @param NodeInterface $sequence a sequence of elements to iterate over.
      * @param array|Traversable $nodes (optional) a collection of nodes.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
      */
-    public function __construct(array $loopVars, NodeInterface $sequence, $children = array(), $lineNumber = -1, $flags = 0x00)
+    public function __construct(array $variables, NodeInterface $sequence, $children = array(), $lineNumber = -1, $flags = 0x00)
     {
         parent::__construct($children, $lineNumber, $flags);
-        $this->setVariables($loopVars);
+        $this->setVariables($variables);
         $this->setSequence($sequence);
     }
 
     /**
      * {@inheritDoc}
+     *
+     * @throws TypeException if the underlying sequence of this node is not iterable.
      */
-    public function render(ContextInterface $context)
+    public function render(ContextInterface $context, OutputStreamInterface $out)
     {
+        $context->push(new TemplateContext());
+        
+        $varNames = $this->getVariableNames($context, $out);
+        $hasKey   = (count($varNames) == 2);
+        $rendered = array();
+        
+        $sequence = $this->getSequence()->render($context, $out);
+        if (!is_array($sequence) && !$sequence instanceof Traversable) {
+            throw new TypeException(sprintf('%s is not iterable', gettype($sequence)), $this->getSequence()->getLineNumber()); 
+        }
     
-    }    
+        foreach ($sequence as $key => $value) {
+            // assign key and value to template context.
+            if ($hasKey) {
+                $context[$varNames[0]] = $key;
+                $context[$varNames[1]] = $value;
+            } else {
+                $context[$varNames[0]] = $value;
+            }
+            
+            foreach ($this->getChildren() as $node) {
+                $rendered[] = $node->render($context, $out);
+            }
+        }
+
+        $context->pop();
+        
+        return implode('', $rendered);
+    }
+    
+    /**
+     * Returns a collection of variable names.
+     *
+     * @param ContextInterface $context the template context.
+     * @param OutputStreamInterface $out the output stream.
+     * @return array a numeric array containing variable names.
+     * @throws SyntaxException if a variable is not a {@link VariableNode} instance.
+     */
+    private function getVariableNames(ContextInterface $context, OutputStreamInterface $out)
+    {
+        $variables = array();
+        foreach ($this->getVariables() as $variable) {
+            // values can only be assigned to variables.
+            if (!$variable instanceof VariableNode) {
+                throw new SyntaxException(sprintf('Can\'t assign to %s', gettype($variable->render($context, $out))), $variable->getLineNumber());
+            }
+            
+            $variables[] = $variable->getName();
+        }
+        
+        return $variables;
+    }   
     
     /**
      * Set the loop variables.
      *
-     * @param array|Traversable $loopVars a collection of loop variables.
+     * @param array|Traversable $variables a collection of loop variables.
      * @throws InvalidArgumentException if the given argument is not an array or Traversable object.
      */
-    private function setVariables($loopVars)
+    private function setVariables($variables)
     {
-        if ($loopVars instanceof \Traversable) {
-            $loopVars = iterator_to_array($loopVars);
+        if ($variables instanceof Traversable) {
+            $variables = iterator_to_array($variables);
         }
     
-        if (!is_array($loopVars)) {
+        if (!is_array($variables)) {
             throw new \InvalidArgumentException(sprintf(
-                '%s: expects an array or instance of the Traversable; received "%s"',
+                '%s: expects an array or Traversable object; received "%s"',
                 __METHOD__,
-                (is_object($loopVars) ? get_class($loopVars) : gettype($loopVars))
+                (is_object($variables) ? get_class($variables) : gettype($variables))
             ));
         }
-
-        $loopVars = array_filter($loopVars, array($this, 'isNode'));
-        $this->loopVars = SplFixedArray::fromArray($loopVars, false);
+        
+        $variables = array_filter($variables, array($this, 'isNode'));
+        $this->variables = array_splice($variables, 0, 2);
     }
     
     /**
      * {@inheritDoc}
      */
     private function getVariables()
-    {
-        if ($this->loopVars === null) {
-            $this->loopVars = new SplFixedArray();
-        }
-    
-        return $this->loopVars;
+    {    
+        return $this->variables;
     }
     
     /**
@@ -110,16 +162,5 @@ class ForNode extends AbstractNode
     private function getSequence()
     {
         return $this->sequence;
-    }
-    
-    /**
-     * Returns true if the specified object is an {@link VariableNode} instance.
-     *
-     * @param mixed $obj the object to test.
-     * @return bool true if the specified object is an {@link VariableNode} instance, false otherwise.
-     */
-    private function isVariableNode($obj)
-    {
-        return (is_object($obj) && $obj instanceof VariableNode);
     }
 }

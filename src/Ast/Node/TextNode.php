@@ -3,16 +3,17 @@
 namespace Curly\Ast\Node;
 
 use Curly\ContextInterface;
-use Curly\Ast\AbstractNode;
+use Curly\Ast\Node;
+use Curly\Io\Stream\OutputStreamInterface;
 
 /**
- *
+ * The TextNode is responsible for rendering plain text.
  *
  * @author Chris Harris
  * @version 1.0.0
  * @since 1.0.0
  */
-class TextNode extends AbstractNode
+class TextNode extends Node
 {   
     /**
      * The text.
@@ -37,9 +38,9 @@ class TextNode extends AbstractNode
     /**
      * {@inheritDoc}
      */
-    public function render(ContextInterface $context)
+    public function render(ContextInterface $context, OutputStreamInterface $out)
     {
-    
+        $out->write($this->getText());
     }
     
     /**

@@ -2,7 +2,8 @@
 
 namespace Curly\Ast;
 
-use SplFixedArray;
+use Curly\ContextInterface;
+use Curly\Io\Stream\OutputStreamInterface;
 
 /**
  * 
@@ -11,7 +12,7 @@ use SplFixedArray;
  * @version 1.0.0
  * @since 1.0.0
  */
-abstract class AbstractNode implements NodeInterface
+class Node implements NodeInterface
 {
     /**
      * A bitmask of flags.
@@ -30,14 +31,14 @@ abstract class AbstractNode implements NodeInterface
     /**
      * A collection of nodes.
      *
-     * @var SplFixedArray
+     * @var array
      */
-    private $children;
+    private $children = array();
     
     /**
      * Construct a new Node.
      *
-     * @param array|Traversable $nodes (optional) a collection of nodes.
+     * @param array|Traversable $children (optional) a collection of nodes.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
      */
@@ -122,8 +123,8 @@ abstract class AbstractNode implements NodeInterface
     /**
      * Set the specified collection of nodes as children of this node.
      *
-     * @param array|Traversable $nodes a collection or nodes.
-     * @throws InvalidArgumentException if the given argument is not an array of Traversable object.
+     * @param array|Traversable $nodes a collection of nodes.
+     * @throws InvalidArgumentException if the given argument is not an array or Traversable object.
      */
     public function setChildren($nodes)
     {
@@ -139,8 +140,7 @@ abstract class AbstractNode implements NodeInterface
             ));
         }
 
-        $nodes = array_filter($nodes, array($this, 'isNode'));
-        $this->children = SplFixedArray::fromArray($nodes, false);
+        $this->children = array_filter($nodes, array($this, 'isNode'));
     }
     
     /**
@@ -149,11 +149,21 @@ abstract class AbstractNode implements NodeInterface
     public function getChildren()
     {
         if ($this->children === null) {
-            $this->children = new SplFixedArray();
+            $this->children = array();
         }
     
         return $this->children;
     }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function render(ContextInterface $context, OutputStreamInterface $out)
+    {
+        foreach ($this->getChildren() as $node) {
+            $node->render($context, $out);
+        }
+    }  
     
     /**
      * Returns true if the specified object is a {@link NodeInterface} instance.
