@@ -5,11 +5,13 @@ namespace Curly;
 use Curly\Ast\Node;
 use Curly\Ast\NodeInterface;
 use Curly\Ast\Node\TextNode;
+use Curly\Ast\Node\Expression\ArrayAccessNode;
 use Curly\Ast\Node\Expression\VariableNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\TokenInterface;
 use Curly\Parser\Token;
+use Curly\Lang\FilterInterface;
 
 /**
  *
@@ -62,46 +64,46 @@ class Parser implements ParserInterface
             }
             
             $token = $stream->current();
-            if ($stream->matches(Token::T_TEXT)) {
+            // code tag
+            if ($stream->matches(Token::T_OPEN_TAG, Token::T_CLOSE_TAG)) {
                 $stream->consume();
+            } 
+            // plain text
+            else if ($stream->consumeIf(Token::T_TEXT) !== null) {
                 $nodes[] = new TextNode($token->getValue(), $token->getLineNumber());
-            } else if ($stream->matches(Token::T_OPEN_TAG, Token::T_CLOSE_TAG)) {
-                $stream->consume();
-            } else if ($stream->matches(Token::T_IDENTIFIER)) {
-                if ($tag = $library->getTag($token->getValue())) {
-                    $nodes[] = $tag->parse($this, $this->getStream());
-                } else {
-                    throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), $token->getLiteral($token->getType())), $token->getLineNumber());
+            } 
+            // identifier
+            else if ($stream->matches(Token::T_IDENTIFIER)) {
+                $tag = $library->getTag($token->getValue());
+                if ($tag === null) {
+                    throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), Token::getLiteral($token->getType())), $token->getLineNumber());
                 }
+                    
+                $nodes[] = $tag->parse($this, $this->getStream());
+            // expression
             } else {
                 $nodes[] = $this->parseExpression($stream);
-                $stream->expects(Token::T_SEMICOLON, Token::T_CLOSE_TAG);
-            }
-            
-            // avoid an infinite loop.
-            if ($stream->current() === $token) {
+                if (!$stream->valid()) {
+                    throw new SyntaxException('Unexpected end of file.');
+                } else if (!$stream->matches(Token::T_SEMICOLON, Token::T_CLOSE_TAG)) {
+                    $token = $stream->current();
+                    throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), Token::getLiteral($token->getType())), $token->getLineNumber());
+                }
+                
                 $stream->consume();
             }
         }
         
-        echo '<pre>';
-        var_dump($nodes);
-        
-        return $nodes;
+        return new Node($nodes);
     }
     
     /**
-     * Parse a single expression.
-     *
-     * @param TokenStream a stream of tokens to parse.
-     * @param int $precedence (optional) the operator precedence that when exceeded by an operator will add
-     *                                   that operator as a child node to the previous node.
-     * @return NodeInterface an expression node.
+     * {@inheritDoc}
      */
     public function parseExpression(TokenStream $stream, $precedence = 0)
     {
         $expr = $this->parsePrimaryExpression($stream);
-        
+
         while (($token = $stream->current()) && $this->isBinary($token)) {           
             $operator = $this->getBinaryOperator($token);
             if ($operator->getPrecedence() < $precedence) {
@@ -125,12 +127,9 @@ class Parser implements ParserInterface
     }
     
     /**
-     * Parse a primary expression.
-     *
-     * @param TokenStream a stream of tokens to parse.
-     * @return NodeInterface an expression node.
+     * {@inheritDoc}
      */
-    private function parsePrimaryExpression(TokenStream $stream)
+    public function parsePrimaryExpression(TokenStream $stream)
     {    
         $node  = null;
         $token = $stream->current();
@@ -139,8 +138,7 @@ class Parser implements ParserInterface
             $stream->consume();
             $operator = $this->getUnaryOperator($token);            
             $node = $operator->createNode($this->parseExpression($stream, $operator->getPrecedence()), $token->getLineNumber());
-        } else if ($stream->matches(Token::T_OPEN_PARENTHESIS)) {
-            $stream->consume();
+        } else if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS) !== null) {
             if (!$stream->valid()) {
                 throw new SyntaxException('Unexpected end of file.');   
             }
@@ -153,59 +151,92 @@ class Parser implements ParserInterface
             
             $stream->consume();
         } else if ($token) {
-            $literal = $this->getLiteral($token);
-            if ($literal) {
+            if (($literal = $this->getLiteral($token)) !== null) {
                 $node = $literal->parse($this, $stream);
-            } else if ($stream->matches(Token::T_VARIABLE)) {                
+            } else if ($stream->matches(Token::T_VARIABLE)) {               
                 $node = new VariableNode($token->getValue(), $token->getLineNumber());
                 $stream->consume();
             } else {
                 throw new SyntaxException(sprintf('Illegal identifier "%s".', $token->getValue()), $token->getLineNumber());
             }
             
-            if ($stream->matches(Token::T_PIPELINE)) {
+            if ($stream->matches(Token::T_OPEN_BRACKET)) {
+                $node = $this->parseArrayExpression($stream, $node);
+            } else if ($stream->matches(Token::T_PIPELINE)) {
                 $node = $this->parseFilterExpression($stream, $node);
             }
         } else {
             throw new SyntaxException(sprintf('Cannot find symbol "%s".', $token->getValue()), $token->getLineNumber());
         }
-        
+
         return $node;
+    }
+    
+    /**
+     * Parse an array access expression.
+     *
+     * The following examples are all valid array access expressions:
+     *
+     * <code>
+     *     $array = {'first' : 'foo', 'second': 'bar'};
+     *     $value = $array['first'];
+     *     $value = ['foo', 'bar', 'baz'][2];
+     *     $value = ['foo', ['foobar', 'foobaz'], 'bar'][1][0]
+     * </code>
+     *
+     * @param TokenStream a stream of tokens to parse.
+     * @param NodeInterface the array node to access.
+     * @return ArrayAccessNode an array access node.
+     * @throws SyntaxException if the current token is not an open bracket.
+     */
+    private function parseArrayExpression($stream, NodeInterface $node)
+    {     
+        $token   = $stream->current();   
+        $indices = array();
+        while ($stream->consumeIf(Token::T_OPEN_BRACKET)) {
+            $indices[] = $this->parseExpression($stream);            
+            $stream->expects(Token::T_CLOSE_BRACKET);
+        }
+        
+        return new ArrayAccessNode($node, $indices, $token->getLineNumber());
     }
     
     /**
      * Parse a filter expression.
      *
-     * A filter expression is one where a variable or literal node is suffixed with one or more pipelines.
-     * The following code snippet shows a string literal being made lowercase using the lower filter.
+     * The following examples are all valid filter expressions:
      *
      * <code>
-     *     name = "JOHN"|lower;
+     *     $name     = 'foo'|upper;
+     *     $pub_date = $pub_date|date('Y-m-d');
+     *     $value    = $value|upper|default('baz');
      * </code>
      *
      * @param TokenStream a stream of tokens to parse.
      * @param NodeInterface the node to which a filter is applied.
      * @return NodeInterface a filtered expression node.
+     * @throws SyntaxException if the current token is not a pipeline.
      */
     private function parseFilterExpression($stream, NodeInterface $node)
-    {
-        $token = $stream->current();
-        if (!$stream->matches(Token::T_PIPELINE)) {
-            $lineno = ($token) ? $token->getLineNumber() : -1;
-            throw new SyntaxException('Expected ")"', $lineno);
-        }
-        
-        while ($stream->matches(Token::T_PIPELINE)) {
-            $stream->consume();
-            $token = $stream->expects(Token::T_IDENTIFIER);
-            
-            if ($stream->matches(Token::T_OPEN_PARENTHESIS)) {
-                $stream->consume();
-                $params = $this->parseExpression($stream);
-                echo '<pre>';
-                var_dump($params);
+    {        
+        $library = $this->getLibrary();
+        while ($stream->consumeIf(Token::T_PIPELINE)) {
+            $token  = $stream->expects(Token::T_IDENTIFIER);
+            $filter = $library->getFilter($token->getValue());
+            if (!$filter instanceof FilterInterface) {
+                throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), Token::getLiteral($token->getType())), $token->getLineNumber());
+            }
+                    
+            $args = array();
+            if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS)) {
+                do {
+                    $args[] = $this->parseExpression($stream);
+                } while ($stream->consumeIf(Token::T_COMMA));
+               
                 $stream->expects(Token::T_CLOSE_PARENTHESIS);
             }
+            
+            $node = new FilterNode($node, $filter, $args, $token->getLineNumber());
         }
         
         return $node;
@@ -261,10 +292,20 @@ class Parser implements ParserInterface
      * @param TokenInterface $token the token for which to find a suitable expression.
      * @return ExpressionInterface|null an expression for the specified token, or null on failure.
      */
-    private function getLiteral(TokenInterface $token)
-    {        
-        $library = $this->getLibrary();
-        return $library->getLiteral($token->getType());
+    public function getLiteral(TokenInterface $token)
+    {
+        return $this->getLibrary()->getLiteral($token->getType());
+    }
+    
+    /**
+     * Returns true if the specified token represents a binary operator.
+     *
+     * @param TokenInterface $token the token whose value will be tested.
+     * @return bool true if the specified token represents a binary operator, false otherwise.
+     */
+    private function isBinary(TokenInterface $token)
+    {
+        return ($this->getLibrary()->getBinaryOperator($token->getValue()) !== null);
     }
     
     /**
@@ -275,20 +316,7 @@ class Parser implements ParserInterface
      */
     private function isUnary(TokenInterface $token)
     {
-        $library = $this->getLibrary();
-        return ($library->getUnaryOperator($token->getValue()) !== null);
-    }
-    
-    /**
-     * Returns if present a unary operator for the specified token.
-     *
-     * @param TokenInterface $token the token for which to find a suitable operator.
-     * @return UnaryOperator|null a unary operator for the specified token, or null on failure.
-     */
-    private function getUnaryOperator(TokenInterface $token)
-    {
-        $library = $this->getLibrary();
-        return $library->getUnaryOperator($token->getValue());
+        return ($this->getLibrary()->getUnaryOperator($token->getValue()) !== null);
     }
     
     /**
@@ -299,19 +327,17 @@ class Parser implements ParserInterface
      */
     private function getBinaryOperator(TokenInterface $token)
     {
-        $library = $this->getLibrary();
-        return $library->getBinaryOperator($token->getValue());
+        return $this->getLibrary()->getBinaryOperator($token->getValue());
     }
-
+    
     /**
-     * Returns true if the specified token represents a binary operator.
+     * Returns if present a unary operator for the specified token.
      *
-     * @param TokenInterface $token the token whose value will be tested.
-     * @return bool true if the specified token represents a binary operator, false otherwise.
+     * @param TokenInterface $token the token for which to find a suitable operator.
+     * @return UnaryOperator|null a unary operator for the specified token, or null on failure.
      */
-    private function isBinary(TokenInterface $token)
-    {    
-        $library = $this->getLibrary();
-        return ($library->getBinaryOperator($token->getValue()) !== null);
+    private function getUnaryOperator(TokenInterface $token)
+    {
+        return $this->getLibrary()->getUnaryOperator($token->getValue());
     }
 }
