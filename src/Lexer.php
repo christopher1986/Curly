@@ -4,7 +4,6 @@ namespace Curly;
 
 use Curly\Collection\Stream\Stream;
 use Curly\Collection\Stream\TokenStream;
-use Curly\Common\Comparator\ObjectComparator;
 use Curly\Common\Comparator\LengthComparator;
 use Curly\Io\StringReader;
 use Curly\Parser\Exception\SyntaxException;
@@ -151,18 +150,17 @@ class Lexer implements LexerInterface
         $lineNumber = $this->reader->getLineNumber();
         if (($tagPos = array_shift($this->tagPositions)) !== null) {
             if (($amount = $tagPos[1] - $this->reader->getPosition()) > 0) {
-                $this->pushToken(Token::T_TEXT, trim($this->reader->readChar($amount), "\n\r\0\x0B"), $lineNumber);
+                $this->pushToken(Token::T_TEXT, $this->reader->readChar($amount), $lineNumber);
             }
 
             $lineNumber = $this->reader->getLineNumber();
             if (($tag = $this->reader->readChar(strlen($tagPos[0]))) === $tagPos[0]) {
-                // illegal tag since were already interpreting (plain) text.
+                // illegal tag since were already interpreting plain text.
                 if ($tag === $this->tags['close']) {
                     throw new SyntaxException(sprintf('Unexpected "%s"', $tag), $lineNumber);
                 }
             
                 $this->pushToken(Token::T_OPEN_TAG, $tag, $lineNumber);
-                // interpret the remaining sequence of characters as code.
                 $this->state = self::STATE_LANG;
             }            
         } else if ($this->reader->hasNextChar()) {
@@ -203,11 +201,7 @@ class Lexer implements LexerInterface
             }
             
             $this->pushToken(Token::T_CLOSE_TAG, $matches[1], $this->reader->getLineNumber());
-            
-            // interpret the remaining sequence of characters as (plain) text.
-            if ($matches[1] === $this->tags['close']) {
-                $this->state = self::STATE_TEXT;
-            }
+            $this->state = self::STATE_TEXT;
         }
         // operator symbols
         else if ($this->reader->matches($this->getOperatorRegex(), $matches)) {
@@ -295,7 +289,7 @@ class Lexer implements LexerInterface
         if (!isset($this->regexes['tag'])) {
             $patterns = array();
             foreach ($this->tags as $tag) {
-                $patterns[] = preg_quote($tag, '/');
+                $patterns[] = sprintf('%s\n?', preg_quote($tag, '/'));
             }
                         
             $this->regexes['tag'] = sprintf('/(%s)/A', implode('|', $patterns));
