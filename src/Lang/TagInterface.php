@@ -14,9 +14,9 @@ use Curly\SubparserInterface;
 interface TagInterface extends SubparserInterface
 {
     /**
-     * Returns a word by this tag is identified.
+     * Returns the name by which this tag is identified.
      *
-     * @return string a word which that identifies this tag.
+     * @return string the name that identifies this tag.
      */
-    public function getTag();
+    public function getName();
 }
