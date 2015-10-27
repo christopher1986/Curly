@@ -68,18 +68,16 @@ class Library implements LibraryInterface
      * {@inheritDoc}
      */
     public function registerFilter($name, $filter)
-    {        
-        $key = (is_string($name)) ? $this->normalize($name) : $name;
-        $this->filters->add($key, $tag);
+    {
+        $this->filters->add($name, $tag);
     }
     
     /**
      * {@inheritDoc}
      */
     public function getFilter($name)
-    {        
-        $key = (is_string($name)) ? $this->normalize($name) : $name;
-        return $this->filters->get($key);
+    {
+        return $this->filters->get($name);
     }
     
     /**
@@ -95,17 +93,15 @@ class Library implements LibraryInterface
      */
     public function registerTag($name, TagInterface $tag)
     {
-        $key = (is_string($name)) ? $this->normalize($name) : $name;
-        $this->tags->add($key, $tag);
+        $this->tags->add($name, $tag);
     }
     
     /**
      * {@inheritDoc}
      */
     public function getTag($name)
-    {        
-        $key = (is_string($name)) ? $this->normalize($name) : $name;
-        return $this->tags->get($key);
+    {
+        return $this->tags->get($name);
     }
     
     /**
@@ -120,18 +116,16 @@ class Library implements LibraryInterface
      * {@inheritDoc}
      */
     public function registerLiteral($type, LiteralInterface $literal)
-    {        
-        $key = (is_string($type)) ? $this->normalize($type) : $type;
-        $this->literals->add($key, $literal);
+    {
+        $this->literals->add($type, $literal);
     }
     
     /**
      * {@inheritDoc}
      */
     public function getLiteral($type)
-    {        
-        $key = (is_string($type)) ? $this->normalize($type) : $type;
-        return $this->literals->get($key);
+    {
+        return $this->literals->get($type);
     }
     
     /**
@@ -148,11 +142,9 @@ class Library implements LibraryInterface
     public function registerOperator($name, OperatorInterface $operator)
     {        
         if ($operator instanceof AbstractBinaryOperator) {
-            $key = (is_string($name)) ? $this->normalize($name) : $name;
-            $this->binaryOperators->add($key, $operator);
+            $this->binaryOperators->add($name, $operator);
         } else {
-            $key = (is_string($name)) ? $this->normalize($name) : $name;
-            $this->unaryOperators->add($key, $operator);
+            $this->unaryOperators->add($name, $operator);
         }
     }
     
@@ -161,8 +153,7 @@ class Library implements LibraryInterface
      */
     public function getUnaryOperator($name)
     {        
-        $key = (is_string($name)) ? $this->normalize($name) : $name;
-        return $this->unaryOperators->get($key);
+        return $this->unaryOperators->get($name);
     }
     
     /**
@@ -170,8 +161,7 @@ class Library implements LibraryInterface
      */
     public function getBinaryOperator($name)
     {
-        $key = (is_string($name)) ? $this->normalize($name) : $name;
-        return $this->binaryOperators->get($key);
+        return $this->binaryOperators->get($name);
     }
     
     /**
@@ -188,25 +178,5 @@ class Library implements LibraryInterface
     public function getBinaryOperators()
     {
         return $this->binaryOperators->values();
-    }
-    
-    /**
-     * Returns a lowercase string and replaces whitespace with hyphens.
-     *
-     * @param string $name the string to normalize.
-     * @return string a normalized string.
-     * @throws InvalidArgumentException if the first argument is not a string or the string is empty.
-     */
-    private function normalize($name)
-    {
-        if (!is_string($name) || strlen($name) === 0) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects a non-empty string argument; received "%s" instead',
-                __METHOD__,
-                (is_object($name) ? get_class($name) : gettype($name))
-            ));
-        }
-        
-        return preg_replace('/(\s+)/', '-', strtolower(trim($name)));
     }
 }

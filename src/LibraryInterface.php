@@ -27,7 +27,7 @@ interface LibraryInterface
      * Returns if present a filter for the specified name.
      *
      * @param mixed $name the name whose associated filter is to be returned.
-     * @return FilterInterface a filter for the specified name, or null on failure.
+     * @return FilterInterface|null a filter for the specified name, or null on failure.
      */
     public function getFilter($name);
     
@@ -50,7 +50,7 @@ interface LibraryInterface
      * Returns if present a tag for the specified name.
      *
      * @param mixed $name the name whose associated tag is to be returned.
-     * @return TagInterface a tag for the specified name, or null on failure.
+     * @return TagInterface|null a tag for the specified name, or null on failure.
      */
     public function getTag($name);
     
@@ -73,7 +73,7 @@ interface LibraryInterface
      * Returns if present a literal for the specified token type.
      *
      * @param mixed $type the token type for which a literal is to be returned
-     * @return LiteralInterface a literal for the specified token type, or null on failure.
+     * @return LiteralInterface|null a literal for the specified token type, or null on failure.
      */
     public function getLiteral($type);
     
@@ -96,7 +96,7 @@ interface LibraryInterface
      * Returns if present a unary operator for the specified name.
      *
      * @param mixed $name the name whose associated operator is to be returned.
-     * @return OperatorInterface a unary operator for the specified name, or null on failure.
+     * @return OperatorInterface|null a unary operator for the specified name, or null on failure.
      */
     public function getUnaryOperator($name);
     
@@ -104,7 +104,7 @@ interface LibraryInterface
      * Returns if present a binary operator for the specified name.
      *
      * @param mixed $name the name whose associated operator is to be returned.
-     * @return OperatorInterface a binary operator for the specified name, or null on failure.
+     * @return OperatorInterface|null a binary operator for the specified name, or null on failure.
      */
     public function getBinaryOperator($name);
     
