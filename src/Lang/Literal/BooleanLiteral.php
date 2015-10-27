@@ -27,10 +27,13 @@ class BooleanLiteral implements LiteralInterface
     
     /**
      * {@inheritDoc}
+     *
+     * @link http://stackoverflow.com/questions/7336861/how-to-convert-string-to-boolean-php#answer-15075609
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
-        $token = $stream->expects(Token::T_BOOLEAN);
-        return new ScalarNode((bool) $token->getValue(), $token->getLineNumber(), ScalarNode::TYPE_BOOLEAN);
+        $token = $stream->consume();
+        $value = filter_var($token->getValue(), FILTER_VALIDATE_BOOLEAN);
+        return new ScalarNode($value, $token->getLineNumber(), ScalarNode::TYPE_BOOLEAN);
     }
 }

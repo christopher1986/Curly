@@ -2,7 +2,7 @@
 
 namespace Curly\Lang\Literal;
 
-use Curly\Ast\Node\Expression\ScalarNode;
+use Curly\Ast\Node\Expression\LiteralNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
@@ -30,7 +30,7 @@ class NullLiteral implements LiteralInterface
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
-        $token = $stream->expects(Token::T_NULL);
+        $token = $stream->consume();
         return new LiteralNode(null, $token->getLineNumber());
     }
 }

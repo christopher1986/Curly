@@ -30,7 +30,7 @@ class FloatLiteral implements LiteralInterface
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
-        $token = $stream->expects(Token::T_FLOAT);
+        $token = $stream->consume();
         return new ScalarNode((float) $token->getValue(), $token->getLineNumber(), ScalarNode::TYPE_FLOAT);
     }
 }

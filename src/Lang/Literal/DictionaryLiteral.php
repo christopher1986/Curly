@@ -3,7 +3,7 @@
 namespace Curly\Lang\Literal;
 
 use Curly\Ast\Node\EntryNode;
-use Curly\Ast\Node\Expression\DictionaryNode;
+use Curly\Ast\Node\Expression\ArrayNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
@@ -39,7 +39,8 @@ class DictionaryLiteral implements LiteralInterface
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {        
-        $token  = $stream->expects(Token::T_OPEN_BRACE);
+        // Consume open bracket.
+        $token   = $stream->consume();
         
         $entries = array();        
         while (!$stream->matches(Token::T_CLOSE_BRACE)) {
@@ -51,10 +52,10 @@ class DictionaryLiteral implements LiteralInterface
             $stream->consumeIf(Token::T_COMMA);
         }
         
-        // Consume the close brace.
+        // Consume close brace.
         $stream->consume();
         
-        return new DictionaryNode($entries, $token->getLineNumber());
+        return new ArrayNode($entries, $token->getLineNumber(), ArrayNode::TYPE_ASSOCIATIVE);
     }
     
     /**
@@ -66,9 +67,7 @@ class DictionaryLiteral implements LiteralInterface
      */
     private function parseEntry(ParserInterface $parser, TokenStream $stream)
     {
-        if (!$stream->valid()) {
-            throw new SyntaxException('Unexpected end of file.');   
-        } else if (!$stream->matches(Token::T_FLOAT, Token::T_IDENTIFIER, Token::T_INTEGER, Token::T_OPEN_PARENTHESIS, Token::T_STRING)) {
+        if (!$stream->matches(Token::T_FLOAT, Token::T_IDENTIFIER, Token::T_INTEGER, Token::T_OPEN_PARENTHESIS, Token::T_STRING)) {
             throw new SyntaxException(sprintf('Cannot find symbol "%s".', $stream->current()->getValue()), $stream->current()->getLineNumber());
         }
         

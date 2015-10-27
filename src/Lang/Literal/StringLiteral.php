@@ -30,7 +30,7 @@ class StringLiteral implements LiteralInterface
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
-        $token = $stream->expects(Token::T_STRING);
+        $token = $stream->consume();
         return new ScalarNode($token->getValue(), $token->getLineNumber(), ScalarNode::TYPE_STRING);
     }
 }

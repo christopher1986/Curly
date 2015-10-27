@@ -30,7 +30,7 @@ class IntegerLiteral implements LiteralInterface
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
-        $token = $stream->expects(Token::T_INTEGER);
+        $token = $stream->consume();
         return new ScalarNode((int) $token->getValue(), $token->getLineNumber(), ScalarNode::TYPE_INTEGER);
     }
 }
