@@ -21,7 +21,7 @@ class IfTag implements TagInterface
     /**
      * {@inheritDoc}
      */
-    public function getTag()
+    public function getName()
     {
         return 'if';
     }
@@ -62,7 +62,6 @@ class IfTag implements TagInterface
         $types = array(
             sprintf('%s:else', Token::T_IDENTIFIER), 
             sprintf('%s:endif', Token::T_IDENTIFIER), 
-            Token::T_CLOSE_TAG
         );
         
         $conditions = array();
@@ -81,7 +80,6 @@ class IfTag implements TagInterface
                 sprintf('%s:elseif', Token::T_IDENTIFIER), 
                 sprintf('%s:else', Token::T_IDENTIFIER), 
                 sprintf('%s:endif', Token::T_IDENTIFIER),
-                Token::T_CLOSE_TAG
             ));
             
             $conditions[] = new ConditionalNode($expression, $children, $token->getLineNumber());
