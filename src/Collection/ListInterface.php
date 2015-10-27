@@ -155,6 +155,14 @@ interface ListInterface extends Countable, IteratorAggregate
     public function subList($fromIndex, $toIndex);
     
     /**
+     * Returns a new stream with elements that match the specified predicate.
+     *
+     * @param callable $predicate the predicate to determine which elements should be included.
+     * @return StreamInterface the new stream.
+     */
+    public function filter($predicate);
+    
+    /**
      * Returns an array containing all of the elements in this list.
      *
      * @return array an array containing all the elements in this list.

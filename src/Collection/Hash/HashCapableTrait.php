@@ -11,7 +11,7 @@ trait HashCapableTrait
      *
      * @var ReflectionClass
      */
-    private function $refClass;
+    private $refClass;
 
     /**
      * Returns a unique identifier for this object.

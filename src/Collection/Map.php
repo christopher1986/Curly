@@ -64,12 +64,7 @@ class Map implements MapInterface, ArrayAccess
      */
     public function get($key, $default = null)
     {
-        $value = $default;
-        if ($this->containsKey($key)) {
-            $value = $this->items[$key];
-        }
-        
-        return $value;
+        return (array_key_exists($key, $this->items)) ? $this->items[$key] : $default;
     }
 
     /**
@@ -94,7 +89,7 @@ class Map implements MapInterface, ArrayAccess
     public function remove($key)
     {
         $oldValue = $this->get($key);
-        if ($this->containsKey($key)) {
+        if (array_key_exists($key, $this->items)) {
             unset($this->items[$key]);
         }
         
@@ -107,7 +102,7 @@ class Map implements MapInterface, ArrayAccess
     public function replace($key, $value)
     {
         $oldValue = $this->get($key);
-        if ($this->containsKey($key)) {
+        if (array_key_exists($key, $this->items)) {
             $this->add($key, $value);
         }
         
@@ -175,7 +170,7 @@ class Map implements MapInterface, ArrayAccess
      */
     public function offsetExists($key)
     {
-        return $this->containsKey($key);
+        return array_key_exists($key, $this->items);
     }
     
     /**
@@ -211,5 +206,5 @@ class Map implements MapInterface, ArrayAccess
     public function offsetUnset($key)
     {
         $this->remove($key);
-    }  
+    }
 }
