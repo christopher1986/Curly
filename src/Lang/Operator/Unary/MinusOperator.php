@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Unary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Unary\NegationNode;
+use Curly\Ast\Node\Expression\Unary\MinusNode;
 use Curly\Lang\Operator\AbstractUnaryOperator;
 
 /** 
@@ -13,14 +13,14 @@ use Curly\Lang\Operator\AbstractUnaryOperator;
  * @version 1.0.0
  * @since 1.0.0
  */
-class NegationOperator extends AbstractUnaryOperator
-{    
+class MinusOperator extends AbstractUnaryOperator
+{
     /**
      * {@inheritDoc}
      */   
     public function getSymbol()
     {
-        return 'not';
+        return '-';
     }
     
     /**
@@ -28,15 +28,15 @@ class NegationOperator extends AbstractUnaryOperator
      */       
     public function getPrecedence()
     {
-        return 500;
+        return 501;
     }
-
+    
     /**
      * {@inheritDoc}
      */
     public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
     {
-        return new NegationNode($node, $lineNumber, $flags);
+        return new MinusNode($node, $lineNumber, $flags);
     }
 }
 

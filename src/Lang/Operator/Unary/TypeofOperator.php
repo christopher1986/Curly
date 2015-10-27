@@ -3,24 +3,24 @@
 namespace Curly\Lang\Operator\Unary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Unary\NotNode;
+use Curly\Ast\Node\Expression\Unary\TypeofNode;
 use Curly\Lang\Operator\AbstractUnaryOperator;
 
-/** 
- *
+/**
+ * 
  *
  * @author Chris Harris
  * @version 1.0.0
  * @since 1.0.0
  */
-class NotOperator extends AbstractUnaryOperator
-{
+class TypeofOperator extends AbstractUnaryOperator
+{    
     /**
      * {@inheritDoc}
      */   
     public function getSymbol()
     {
-        return 'not';
+        return 'typeof';
     }
     
     /**
@@ -36,7 +36,6 @@ class NotOperator extends AbstractUnaryOperator
      */
     public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
     {
-        return new NotNode($node, $lineNumber, $flags);
+        return new TypeofNode($node, $lineNumber, $flags);
     }
 }
-
