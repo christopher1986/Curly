@@ -5,10 +5,10 @@ namespace Curly\Lang\Tag;
 use Curly\Ast\Node\ForNode;
 use Curly\Ast\Node\Expression\VariableNode;
 use Curly\Collection\Stream\TokenStream;
-use Curly\Lang\TagInterface;
 use Curly\Parser\Exception\SyntaxException;
 use Curly\ParserInterface;
 use Curly\Parser\Token;
+use Curly\SubparserInterface;
 
 /**
  *
@@ -17,16 +17,8 @@ use Curly\Parser\Token;
  * @version 1.0.0
  * @since 1.0.0
  */
-class ForTag implements TagInterface
-{    
-    /**
-     * {@inheritDoc}
-     */
-    public function getName()
-    {
-        return 'for';
-    }
-        
+class ForTag implements SubparserInterface
+{        
     /**
      * {@inheritDoc}
      */

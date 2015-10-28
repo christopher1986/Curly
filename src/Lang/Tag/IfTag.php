@@ -5,9 +5,9 @@ namespace Curly\Lang\Tag;
 use Curly\Ast\Node\ConditionalNode;
 use Curly\Ast\Node\IfNode;
 use Curly\Collection\Stream\TokenStream;
-use Curly\Lang\TagInterface;
 use Curly\ParserInterface;
 use Curly\Parser\Token;
+use Curly\SubparserInterface;
 
 /**
  *
@@ -16,7 +16,7 @@ use Curly\Parser\Token;
  * @version 1.0.0
  * @since 1.0.0
  */
-class IfTag implements TagInterface
+class IfTag implements SubparserInterface
 {    
     /**
      * {@inheritDoc}

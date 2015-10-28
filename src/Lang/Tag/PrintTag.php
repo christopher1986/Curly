@@ -4,9 +4,9 @@ namespace Curly\Lang\Tag;
 
 use Curly\Ast\Node\PrintNode;
 use Curly\Collection\Stream\TokenStream;
-use Curly\Lang\TagInterface;
 use Curly\ParserInterface;
 use Curly\Parser\Token;
+use Curly\SubparserInterface;
 
 /**
  * 
@@ -15,7 +15,7 @@ use Curly\Parser\Token;
  * @version 1.0.0
  * @since 1.0.0
  */
-class PrintTag implements TagInterface
+class PrintTag implements SubparserInterface
 {    
     /**
      * {@inheritDoc}

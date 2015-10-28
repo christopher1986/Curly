@@ -5,42 +5,44 @@ namespace Curly\Ast\Node;
 use Curly\ContextInterface;
 use Curly\Ast\Node;
 use Curly\Io\Stream\OutputStreamInterface;
+use Curly\Parser\Exception\NoSuchMethodException;
 
 /**
- * The CallableNode is responsible for rendering a callback function.
+ * The TagNode is responsible for rendering a simple tag
  *
  * @author Chris Harris
  * @version 1.0.0
  * @since 1.0.0
  */
-class CallableNode extends Node
+class TagNode extends Node
 {
     /**
-     * The callback function which will be invoked.
+     * The tag which will be invoked.
      *
-     * @var callable
+     * @var object
      */
-    private $callable;
+    private $tag;
+
     
     /**
-     * A collection of argument to pass to the callable.
+     * A collection of argument to pass to the tag.
      *
      * @var array
      */
     private $arguments;
     
     /**
-     * Construct a new CallableNode.
+     * Construct a new TagNode.
      *
-     * @param callable $callable the callback function to invoke.
-     * @param array $arguments (optional) a collection of arguments passed to the filter.
+     * @param object $tag the tag to invoke.
+     * @param array $arguments (optional) a collection of arguments passed to the tag.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
      */
-    public function __construct($callable, $arguments = array(), $lineNumber = -1, $flags = 0x00)
+    public function __construct($tag, $arguments = array(), $lineNumber = -1, $flags = 0x00)
     {
         parent::__construct(array(), $lineNumber, $flags);
-        $this->setCallable($callable);
+        $this->setTag($tag);
         $this->setArguments($arguments);
     }
     
@@ -49,41 +51,50 @@ class CallableNode extends Node
      */
     public function render(ContextInterface $context, OutputStreamInterface $out)
     {
+        $tag  = $this->getTag();
         $args = array();
         foreach ($this->getArguments() as $node) {
             $args[] = $node->render($context, $out);
         }
         
-        return call_user_func_array($this->getCallable(), $args);
+        $callable = array($tag, 'call');
+        if (!is_callable($callable)) {
+            throw new NoSuchMethodException(sprintf(
+                'missing publicly accessible "call" method for %s',
+                get_class($tag)
+            ));
+        }
+        
+        return call_user_func_array($callable, $args);
     }
     
     /**
-     * Set the callback function which will be invoked when rendering this node.
+     * Set the tag which will be invoked when rendering this node.
      *
-     * @param callable $callable the callback function to invoke.
-     * @throws InvalidArgumentException if the given argument is not an array or Traversable object.
+     * @param object $tag the tag to invoke.
+     * @throws InvalidArgumentException if the given argument is an object.
      */
-    private function setCallable($callable)
+    private function setTag($tag)
     {
-        if (!is_callable($callable)) {
+        if (!is_object($tag)) {
             throw new \InvalidArgumentException(sprintf(
-                '%s: ',
+                '%s: expects an object; received "%s"',
                 __METHOD__,
-                (is_object($callable)) ? get_class($callable) : gettype($callable)
+                gettype($tag)
             ));
         }
     
-        $this->callable = $callable;
+        $this->tag = $tag;
     }
     
     /**
-     * Returns the callback function which will be invoked when this node is rendered.
+     * Returns the tag which will be invoked when this node is rendered.
      *
-     * @return callable the callback function to invoke.
+     * @return object the tag to invoke.
      */
-    private function getCallable()
+    private function getTag()
     {
-        return $this->callable;
+        return $this->tag;
     }
     
     /**
