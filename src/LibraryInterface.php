@@ -4,7 +4,6 @@ namespace Curly;
 
 use Curly\Lang\LiteralInterface;
 use Curly\Lang\OperatorInterface;
-use Curly\Lang\TagInterface;
 
 /** 
  *
@@ -19,7 +18,7 @@ interface LibraryInterface
      * Add a new filter with the specified name.
      *
      * @param mixed $name the name associated with the filter.
-     * @param FilterInterface $filter the filter to add.
+     * @param object $filter the filter to add.
      */
     public function registerFilter($name, $filter);
     
@@ -27,7 +26,7 @@ interface LibraryInterface
      * Returns if present a filter for the specified name.
      *
      * @param mixed $name the name whose associated filter is to be returned.
-     * @return FilterInterface|null a filter for the specified name, or null on failure.
+     * @return object|null a filter for the specified name, or null on failure.
      */
     public function getFilter($name);
     
@@ -42,15 +41,15 @@ interface LibraryInterface
      * Add a new tag with the specified name.
      *
      * @param mixed $name the name associated with the tag.
-     * @param TagInterface $tag the tag to add.
+     * @param object $tag the tag to add.
      */
-    public function registerTag($name, TagInterface $tag);
+    public function registerTag($name, $tag);
     
     /**
      * Returns if present a tag for the specified name.
      *
      * @param mixed $name the name whose associated tag is to be returned.
-     * @return TagInterface|null a tag for the specified name, or null on failure.
+     * @return object|null a tag for the specified name, or null on failure.
      */
     public function getTag($name);
     

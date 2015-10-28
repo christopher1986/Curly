@@ -6,7 +6,6 @@ use Curly\Collection\Map;
 use Curly\Lang\LiteralInterface;
 use Curly\Lang\OperatorInterface;
 use Curly\Lang\Operator\AbstractBinaryOperator;
-use Curly\Lang\TagInterface;
 
 /** 
  *
@@ -69,7 +68,7 @@ class Library implements LibraryInterface
      */
     public function registerFilter($name, $filter)
     {
-        $this->filters->add($name, $tag);
+        $this->filters->add($name, $filter);
     }
     
     /**
@@ -91,7 +90,7 @@ class Library implements LibraryInterface
     /**
      * {@inheritDoc}
      */
-    public function registerTag($name, TagInterface $tag)
+    public function registerTag($name, $tag)
     {
         $this->tags->add($name, $tag);
     }
