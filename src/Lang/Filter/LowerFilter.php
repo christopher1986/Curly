@@ -2,19 +2,21 @@
 
 namespace Curly\Lang\Filter;
 
-use Curly\Lang\FilterInterface;
-
-class LowerFilter implements FilterInterface
+class LowerFilter
 {    
     /**
      * Returns the specified value with all alphabetic characters converted to lowercase.
      *
+     * <code>
+     *     $lower = 'FooBarBaz'|lower;
+     * </code>
+     *
      * @param string $value the string to make to lowercase.
-     * @param array|null $args (optional) additional arguments used by this filter.
-     * @return string the lowercased string.
+     * @return string the specified string in lowercase.
+     * @link http://php.net/manual/en/function.strtolower.php strtolower
      */
-    public function filter($value, array $args = null)
+    public function filter($value)
     {
-        var_dump('works');
+        return (is_string($value)) ? strtolower($value) : '';
     }
 }

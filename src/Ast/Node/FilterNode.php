@@ -9,6 +9,7 @@ use Curly\Ast\Node;
 use Curly\Ast\NodeInterface;
 use Curly\Ast\Expression\VariableNode;
 use Curly\Io\Stream\OutputStreamInterface;
+use Curly\Parser\Exception\NoSuchMethodException;
 
 /**
  * The TextNode is responsible for rendering a template filter.
@@ -22,7 +23,7 @@ class FilterNode extends Node
     /**
      * The filter which will be invoked.
      *
-     * @var FilterInterface
+     * @var object
      */
     private $filter;
 
@@ -37,12 +38,14 @@ class FilterNode extends Node
      * Construct a new FilterNode.
      *
      * @param NodeInterface the node on which to apply the filter.
-     * @param FilterInterface $filter the filter to invoke.
+     * @param object $filter the filter to invoke.
      * @param array $arguments (optional) a collection of arguments passed to the filter.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
+     * @see FilterNode::setFilter($filter)
+     * @see FilterNode::setArguments($arguments)
      */
-    public function __construct(NodeInterface $node, FilterInterface $filter, $arguments = array(), $lineNumber = -1, $flags = 0x00)
+    public function __construct(NodeInterface $node, $filter, $arguments = array(), $lineNumber = -1, $flags = 0x00)
     {
         parent::__construct(array($node), $lineNumber, $flags);
         $this->setFilter($filter);
@@ -58,12 +61,20 @@ class FilterNode extends Node
         $nodes  = $this->getChildren();
         $node   = reset($nodes);
         
-        $args = array();
+        $args = array($node->render($context, $out));
         foreach ($this->getArguments() as $argNode) {
             $args[] = $argNode->render($context, $out);
         }
 
-        return $filter->filter($node->render($context, $out), $args);
+        $callable = array($filter, 'filter');
+        if (!is_callable($callable)) {
+            throw new NoSuchMethodException(sprintf(
+                'missing publicly accessible "filter" method for %s',
+                get_class($filter)
+            ));
+        }
+        
+        return call_user_func_array($callable, $args);
     }
     
     /**
@@ -99,18 +110,26 @@ class FilterNode extends Node
     /**
      * Set the filter which will be invoked when rendering this node.
      *
-     * @param FilterInterface $filter the {@link FilterInterface} instance to invoke.
-     * @throws InvalidArgumentException if the given argument is not an array or Traversable object.
+     * @param object $filter the filter to invoke.
+     * @throws InvalidArgumentException if the given argument is an object.
      */
-    private function setFilter(FilterInterface $filter)
+    private function setFilter($filter)
     {
+        if (!is_object($filter)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects an object; received "%s"',
+                __METHOD__,
+                gettype($filter)
+            ));
+        }
+    
         $this->filter = $filter;
     }
     
     /**
      * Returns the filter which will be invoked when this node is rendered.
      *
-     * @return FilterInterface the filter to invoke.
+     * @return object a filter to invoke.
      */
     private function getFilter()
     {

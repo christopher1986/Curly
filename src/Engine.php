@@ -5,6 +5,7 @@ namespace Curly;
 use Curly\Collection\HashSet;
 use Curly\Io\Stream\OutputStream;
 use Curly\Io\Stream\PrintStream;
+use Curly\Lang\Filter\LowerFilter;
 use Curly\Lang\Literal\ArrayLiteral;
 use Curly\Lang\Literal\BooleanLiteral;
 use Curly\Lang\Literal\DictionaryLiteral;
@@ -35,6 +36,7 @@ use Curly\Lang\Operator\Unary\TypeofOperator;
 use Curly\Lang\Tag\ForTag;
 use Curly\Lang\Tag\IfTag;
 use Curly\Lang\Tag\PrintTag;
+use Curly\Lang\Tag\RangeTag;
 use Curly\Loader\StringLoader;
 use Curly\Parser\Exception\TemplateNotFoundException;
 
@@ -87,6 +89,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
      */
     public function __construct()
     {
+        $this->defaultFilters();
         $this->defaultTags();
         $this->defaultLiterals();
         $this->defaultOperators();
@@ -212,19 +215,35 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     }
 
     /**
+     * Register default filters with library.
+     */
+    private function defaultFilters()
+    {
+        $filters = array(
+            'lower' => new LowerFilter(),
+        );
+        
+        $library = $this->getLibrary();
+        foreach ($filters as $name => $filter) {
+            $library->registerFilter($name, $filter);
+        }
+    }
+
+    /**
      * Register default tags with library.
      */
     private function defaultTags()
     {
         $tags = array(
-            new ForTag(),
-            new IfTag(),
-            new PrintTag(),
+            'for'   => new ForTag(),
+            'if'    => new IfTag(),
+            'print' => new PrintTag(),
+            'range' => new RangeTag(),
         );
         
         $library = $this->getLibrary();
-        foreach ($tags as $tag) {
-            $library->registerTag($tag->getName(), $tag);
+        foreach ($tags as $name => $tag) {
+            $library->registerTag($name, $tag);
         }
     }
     

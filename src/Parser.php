@@ -4,6 +4,7 @@ namespace Curly;
 
 use Curly\Ast\Node;
 use Curly\Ast\NodeInterface;
+use Curly\Ast\Node\FilterNode;
 use Curly\Ast\Node\TextNode;
 use Curly\Ast\Node\Expression\ArrayAccessNode;
 use Curly\Ast\Node\Expression\VariableNode;
@@ -11,7 +12,6 @@ use Curly\Collection\Stream\TokenStream;
 use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\TokenInterface;
 use Curly\Parser\Token;
-use Curly\Lang\FilterInterface;
 
 /**
  *
@@ -131,8 +131,9 @@ class Parser implements ParserInterface
      */
     public function parsePrimaryExpression(TokenStream $stream)
     {    
-        $node  = null;
-        $token = $stream->current();
+        $library = $this->getLibrary();
+        $node    = null;
+        $token   = $stream->current();
 
         if ($this->isUnary($token)) {
             $stream->consume();
@@ -151,7 +152,8 @@ class Parser implements ParserInterface
             
             $stream->consume();
         } else if ($token) {
-            if (($literal = $this->getLiteral($token)) !== null) {
+            $literal = $library->getLiteral($token->getType());
+            if ($literal !== null) {
                 $node = $literal->parse($this, $stream);
             } else if ($stream->matches(Token::T_VARIABLE)) {               
                 $node = new VariableNode($token->getValue(), $token->getLineNumber());
@@ -223,7 +225,7 @@ class Parser implements ParserInterface
         while ($stream->consumeIf(Token::T_PIPELINE)) {
             $token  = $stream->expects(Token::T_IDENTIFIER);
             $filter = $library->getFilter($token->getValue());
-            if (!$filter instanceof FilterInterface) {
+            if (!is_object($filter)) {
                 throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), Token::getLiteral($token->getType())), $token->getLineNumber());
             }
                     
@@ -284,17 +286,6 @@ class Parser implements ParserInterface
     public function getLibrary()
     {
         return $this->getEngine()->getLibrary();
-    }
-    
-    /**
-     * Returns if present an expression for the specified token.
-     *
-     * @param TokenInterface $token the token for which to find a suitable expression.
-     * @return ExpressionInterface|null an expression for the specified token, or null on failure.
-     */
-    public function getLiteral(TokenInterface $token)
-    {
-        return $this->getLibrary()->getLiteral($token->getType());
     }
     
     /**
