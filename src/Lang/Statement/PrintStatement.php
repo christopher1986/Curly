@@ -1,12 +1,12 @@
 <?php
 
-namespace Curly\Lang\Tag;
+namespace Curly\Lang\Statement;
 
 use Curly\Ast\Node\PrintNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\ParserInterface;
 use Curly\Parser\Token;
-use Curly\SubparserInterface;
+use Curly\Lang\StatementInterface;
 
 /**
  * 
@@ -15,16 +15,8 @@ use Curly\SubparserInterface;
  * @version 1.0.0
  * @since 1.0.0
  */
-class PrintTag implements SubparserInterface
+class PrintStatement implements StatementInterface
 {    
-    /**
-     * {@inheritDoc}
-     */    
-    public function getName()
-    {
-        return 'print';
-    }
-    
     /**
      * {@inheritDoc}
      */
