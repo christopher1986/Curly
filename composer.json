@@ -1,6 +1,7 @@
 {
     "name": "christopher/curly",
-    "description": "A lightweight template language for creating or customizing reports",
+    "description": "A lightweight template language for PHP",
+    "type": "library",
     "license": "BSD-3-Clause",
     "authors": [
         {
