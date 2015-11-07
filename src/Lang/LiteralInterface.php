@@ -3,7 +3,7 @@
 namespace Curly\Lang;
 
 use Curly\ParserInterface;
-use Curly\Collection\Stream\TokenStream;
+use Curly\Parser\Stream\TokenStream;
 
 /** 
  *

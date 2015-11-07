@@ -4,8 +4,8 @@ namespace Curly\Lang\Statement;
 
 use Curly\Ast\Node\ForNode;
 use Curly\Ast\Node\Expression\VariableNode;
-use Curly\Collection\Stream\TokenStream;
 use Curly\Parser\Exception\SyntaxException;
+use Curly\Parser\Stream\TokenStream;
 use Curly\ParserInterface;
 use Curly\Parser\Token;
 use Curly\Lang\StatementInterface;

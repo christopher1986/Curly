@@ -2,7 +2,7 @@
 
 namespace Curly;
 
-use Curly\Collection\Stream\TokenStream;
+use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\TokenInterface;
 
 /**

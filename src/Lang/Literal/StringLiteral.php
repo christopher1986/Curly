@@ -3,9 +3,9 @@
 namespace Curly\Lang\Literal;
 
 use Curly\Ast\Node\Expression\ScalarNode;
-use Curly\Collection\Stream\TokenStream;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
+use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\Token;
 
 /** 

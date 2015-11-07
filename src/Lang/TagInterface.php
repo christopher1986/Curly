@@ -3,7 +3,7 @@
 namespace Curly\Lang;
 
 use Curly\ParserInterface;
-use Curly\Collection\Stream\TokenStream;
+use Curly\Parser\Stream\TokenStream;
 
 /**
  * The TagInterface allows a tag to parse a stream of tokens into one or more nodes which 

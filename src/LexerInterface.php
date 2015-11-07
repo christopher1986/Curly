@@ -40,8 +40,7 @@
 namespace Curly;
 
 /**
- * A lexer is responsible for processing a stream of text up into words, phrases, symbols or other meaningful 
- * elements called tokens.
+ * The lexer is responsible for converting a sequence of characters into a collection of tokens.
  *
  * @author Chris Harris
  * @version 1.0.0
@@ -50,7 +49,7 @@ namespace Curly;
 interface LexerInterface
 {
     /**
-     * Creates a collection of tokens from the specified input string.
+     * Returns a stream of tokens which were collected from the specified input string.
      *
      * @param string $input the string to tokenize.
      * @return TokenStream a stream containing tokens.

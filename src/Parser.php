@@ -8,8 +8,8 @@ use Curly\Ast\Node\FilterNode;
 use Curly\Ast\Node\TextNode;
 use Curly\Ast\Node\Expression\ArrayAccessNode;
 use Curly\Ast\Node\Expression\VariableNode;
-use Curly\Collection\Stream\TokenStream;
 use Curly\Parser\Exception\SyntaxException;
+use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\TokenInterface;
 use Curly\Parser\Token;
 

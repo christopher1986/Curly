@@ -2,11 +2,11 @@
 
 namespace Curly;
 
-use Curly\Collection\Stream\Stream;
-use Curly\Collection\Stream\TokenStream;
 use Curly\Common\Comparator\LengthComparator;
 use Curly\Io\StringReader;
 use Curly\Parser\Exception\SyntaxException;
+use Curly\Parser\Stream\Stream;
+use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\Token;
 use Curly\Util\Arrays;
 

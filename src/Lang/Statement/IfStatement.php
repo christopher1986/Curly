@@ -4,8 +4,8 @@ namespace Curly\Lang\Statement;
 
 use Curly\Ast\Node\ConditionalNode;
 use Curly\Ast\Node\IfNode;
-use Curly\Collection\Stream\TokenStream;
 use Curly\ParserInterface;
+use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\Token;
 use Curly\Lang\StatementInterface;
 

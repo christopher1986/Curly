@@ -1,6 +1,6 @@
 <?php
 
-namespace Curly\Collection\Stream;
+namespace Curly\Parser\Stream;
 
 /**
  *

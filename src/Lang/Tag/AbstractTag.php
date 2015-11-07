@@ -3,8 +3,8 @@
 namespace Curly\Lang\Tag;
 
 use Curly\Ast\Node\TagNode;
-use Curly\Collection\Stream\TokenStream;
 use Curly\ParserInterface;
+use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\Token;
 use Curly\Lang\TagInterface;
 
