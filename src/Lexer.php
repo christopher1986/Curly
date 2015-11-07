@@ -31,8 +31,8 @@ class Lexer implements LexerInterface
      * @var array
      */
     private $tags = array(
-        'open'  => '<%',
-        'close' => '%>',
+        'open'  => '{%',
+        'close' => '%}',
     );
     
     /**
