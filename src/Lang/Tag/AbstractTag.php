@@ -6,7 +6,7 @@ use Curly\Ast\Node\TagNode;
 use Curly\Collection\Stream\TokenStream;
 use Curly\ParserInterface;
 use Curly\Parser\Token;
-use Curly\SubparserInterface;
+use Curly\Lang\TagInterface;
 
 /**
  *
@@ -15,7 +15,7 @@ use Curly\SubparserInterface;
  * @version 1.0.0
  * @since 1.0.0
  */
-abstract class AbstractTag implements SubparserInterface
+abstract class AbstractTag implements TagInterface
 {
     /**
      * {@inheritDoc}
