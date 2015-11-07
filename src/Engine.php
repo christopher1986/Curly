@@ -6,6 +6,7 @@ use Curly\Collection\HashSet;
 use Curly\Io\Stream\OutputStream;
 use Curly\Io\Stream\PrintStream;
 use Curly\Lang\Filter\LowerFilter;
+use Curly\Lang\Filter\UpperFilter;
 use Curly\Lang\Literal\ArrayLiteral;
 use Curly\Lang\Literal\BooleanLiteral;
 use Curly\Lang\Literal\DictionaryLiteral;
@@ -33,9 +34,9 @@ use Curly\Lang\Operator\Unary\MinusOperator;
 use Curly\Lang\Operator\Unary\NegationOperator;
 use Curly\Lang\Operator\Unary\PlusOperator;
 use Curly\Lang\Operator\Unary\TypeofOperator;
-use Curly\Lang\Tag\ForTag;
-use Curly\Lang\Tag\IfTag;
-use Curly\Lang\Tag\PrintTag;
+use Curly\Lang\Statement\ForStatement;
+use Curly\Lang\Statement\IfStatement;
+use Curly\Lang\Statement\PrintStatement;
 use Curly\Lang\Tag\RangeTag;
 use Curly\Loader\StringLoader;
 use Curly\Parser\Exception\TemplateNotFoundException;
@@ -89,6 +90,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
      */
     public function __construct()
     {
+        $this->defaultStatements();
         $this->defaultFilters();
         $this->defaultTags();
         $this->defaultLiterals();
@@ -215,12 +217,30 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     }
 
     /**
-     * Register default filters with library.
+     * Register default statements with the library.
+     */
+    private function defaultStatements()
+    {
+        $statements = array(
+            'for'   => new ForStatement(),
+            'if'    => new IfStatement(),
+            'print' => new PrintStatement(),
+        );
+        
+        $library = $this->getLibrary();
+        foreach ($statements as $name => $statement) {
+            $library->registerStatement($name, $statement);
+        }
+    }
+
+    /**
+     * Register default filters with the library.
      */
     private function defaultFilters()
     {
         $filters = array(
             'lower' => new LowerFilter(),
+            'upper' => new UpperFilter(),
         );
         
         $library = $this->getLibrary();
@@ -230,14 +250,11 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     }
 
     /**
-     * Register default tags with library.
+     * Register default tags with the library.
      */
     private function defaultTags()
     {
         $tags = array(
-            'for'   => new ForTag(),
-            'if'    => new IfTag(),
-            'print' => new PrintTag(),
             'range' => new RangeTag(),
         );
         
@@ -248,7 +265,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     }
     
     /**
-     * Register default literals with library.
+     * Register default literals with the library.
      */
     private function defaultLiterals()
     {
@@ -269,7 +286,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     }
     
     /**
-     * Register default operators with library.
+     * Register default operators with the library.
      */
     private function defaultOperators()
     {
