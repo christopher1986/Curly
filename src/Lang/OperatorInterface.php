@@ -2,8 +2,6 @@
 
 namespace Curly\Lang;
 
-use Curly\SubparserInterface;
-
 /**
  * An Operator perfoms an operation on one or more expressions, also known as it's operands.
  * Most common operators are addition, subtraction, division and multiplication. All operators
