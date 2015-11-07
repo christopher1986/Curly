@@ -72,14 +72,14 @@ class Parser implements ParserInterface
             else if ($stream->consumeIf(Token::T_TEXT) !== null) {
                 $nodes[] = new TextNode($token->getValue(), $token->getLineNumber());
             } 
-            // identifier
+            // statement
             else if ($stream->matches(Token::T_IDENTIFIER)) {
-                $tag = $library->getTag($token->getValue());
-                if ($tag === null) {
-                    throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), Token::getLiteral($token->getType())), $token->getLineNumber());
+                $statement = $library->getStatement($token->getValue());
+                if ($statement === null) {
+                    throw new SyntaxException(sprintf('Illegal identifier "%s".', $token->getValue()), $token->getLineNumber());
                 }
                     
-                $nodes[] = $tag->parse($this, $this->getStream());
+                $nodes[] = $statement->parse($this, $this->getStream());
             // expression
             } else {
                 $nodes[] = $this->parseExpression($stream);
@@ -135,11 +135,14 @@ class Parser implements ParserInterface
         $node    = null;
         $token   = $stream->current();
 
+        // unary operator
         if ($this->isUnary($token)) {
             $stream->consume();
             $operator = $this->getUnaryOperator($token);            
             $node = $operator->createNode($this->parseExpression($stream, $operator->getPrecedence()), $token->getLineNumber());
-        } else if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS) !== null) {
+        } 
+        // parenthesized expression
+        else if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS)) {
             if (!$stream->valid()) {
                 throw new SyntaxException('Unexpected end of file.');   
             }
@@ -151,6 +154,16 @@ class Parser implements ParserInterface
             }
             
             $stream->consume();
+        }
+        // template tag
+        else if ($stream->matches(Token::T_IDENTIFIER)) {
+            $tag = $library->getTag($token->getValue());
+            if ($tag === null) {
+                throw new SyntaxException(sprintf('Illegal identifier "%s".', $token->getValue()), $token->getLineNumber());
+            }
+                
+            $node = $tag->parse($this, $this->getStream());
+        // literal
         } else if ($token) {
             $literal = $library->getLiteral($token->getType());
             if ($literal !== null) {
@@ -158,12 +171,10 @@ class Parser implements ParserInterface
             } else if ($stream->matches(Token::T_VARIABLE)) {               
                 $node = new VariableNode($token->getValue(), $token->getLineNumber());
                 $stream->consume();
-            } else {
-                throw new SyntaxException(sprintf('Illegal identifier "%s".', $token->getValue()), $token->getLineNumber());
             }
             
             if ($stream->matches(Token::T_OPEN_BRACKET)) {
-                $node = $this->parseArrayExpression($stream, $node);
+                $node = $this->parseArrayAccessExpression($stream, $node);
             } else if ($stream->matches(Token::T_PIPELINE)) {
                 $node = $this->parseFilterExpression($stream, $node);
             }
@@ -191,7 +202,7 @@ class Parser implements ParserInterface
      * @return ArrayAccessNode an array access node.
      * @throws SyntaxException if the current token is not an open bracket.
      */
-    private function parseArrayExpression($stream, NodeInterface $node)
+    private function parseArrayAccessExpression($stream, NodeInterface $node)
     {     
         $token   = $stream->current();   
         $indices = array();
@@ -202,7 +213,7 @@ class Parser implements ParserInterface
         
         return new ArrayAccessNode($node, $indices, $token->getLineNumber());
     }
-    
+     
     /**
      * Parse a filter expression.
      *
