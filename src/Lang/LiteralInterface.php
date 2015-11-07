@@ -2,8 +2,8 @@
 
 namespace Curly\Lang;
 
-use Curly\SubparserInterface;
-use Curly\Parser\TokenInterface;
+use Curly\ParserInterface;
+use Curly\Collection\Stream\TokenStream;
 
 /** 
  *
@@ -12,7 +12,7 @@ use Curly\Parser\TokenInterface;
  * @version 1.0.0
  * @since 1.0.0
  */
-interface LiteralInterface extends SubparserInterface
+interface LiteralInterface
 {
     /**
      * Returns the token type which this literal is associated with.
@@ -22,4 +22,13 @@ interface LiteralInterface extends SubparserInterface
      * @see Lexer
      */
     public function getIdentifier();
+    
+    /**
+     * Creates part of the abstract syntax tree by parsing a collection of tokens.
+     *
+     * @param ParserInterface $parser the template parser.
+     * @param TokenStream the stream of tokens to parse.
+     * @return NodeInterface|null a node or null if not enough tokens have been parsed yet.
+     */
+    public function parse(ParserInterface $parser, TokenStream $stream);
 }
