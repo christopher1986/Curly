@@ -5,6 +5,8 @@ namespace Curly;
 use Curly\Collection\Map;
 use Curly\Lang\LiteralInterface;
 use Curly\Lang\OperatorInterface;
+use Curly\Lang\StatementInterface;
+use Curly\Lang\TagInterface;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -16,6 +18,13 @@ use Curly\Lang\Operator\AbstractBinaryOperator;
  */
 class Library implements LibraryInterface
 {
+    /**
+     * A mapping between names and statements.
+     *
+     * @var MapInterface
+     */
+    private $statements;
+
     /**
      * A mapping between names and filters.
      *
@@ -56,11 +65,36 @@ class Library implements LibraryInterface
      */
     public function __construct()
     {
+        $this->statements      = new Map();
         $this->filters         = new Map();
         $this->tags            = new Map();
         $this->literals        = new Map();
         $this->unaryOperators  = new Map();
         $this->binaryOperators = new Map();
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function registerStatement($name, StatementInterface $statement)
+    {
+        $this->statements->add($name, $statement);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function getStatement($name)
+    {
+        return $this->statements->get($name);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function getStatements()
+    {
+        return $this->statements->values();
     }
 
     /**
@@ -90,7 +124,7 @@ class Library implements LibraryInterface
     /**
      * {@inheritDoc}
      */
-    public function registerTag($name, $tag)
+    public function registerTag($name, TagInterface $tag)
     {
         $this->tags->add($name, $tag);
     }

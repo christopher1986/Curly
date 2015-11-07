@@ -4,6 +4,8 @@ namespace Curly;
 
 use Curly\Lang\LiteralInterface;
 use Curly\Lang\OperatorInterface;
+use Curly\Lang\StatementInterface;
+use Curly\Lang\TagInterface;
 
 /** 
  *
@@ -14,6 +16,29 @@ use Curly\Lang\OperatorInterface;
  */
 interface LibraryInterface
 {
+    /**
+     * Add a new statement with the specified name.
+     *
+     * @param mixed $name the name associated with the statement.
+     * @param StatementInterface $statement the statement to add.
+     */
+    public function registerStatement($name, StatementInterface $statement);
+    
+    /**
+     * Returns if present a statement for the specified name.
+     *
+     * @param mixed $name the name whose associated statement is to be returned.
+     * @return object|null a statement for the specified name, or null on failure.
+     */
+    public function getStatement($name);
+    
+    /**
+     * Returns a collection of registered statements.
+     *
+     * @return array collection of statements.
+     */
+    public function getStatements();
+
     /**
      * Add a new filter with the specified name.
      *
@@ -41,9 +66,9 @@ interface LibraryInterface
      * Add a new tag with the specified name.
      *
      * @param mixed $name the name associated with the tag.
-     * @param object $tag the tag to add.
+     * @param TagInterface $tag the tag to add.
      */
-    public function registerTag($name, $tag);
+    public function registerTag($name, TagInterface $tag);
     
     /**
      * Returns if present a tag for the specified name.
