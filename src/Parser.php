@@ -62,14 +62,14 @@ class Parser implements ParserInterface
         $library = $this->getLibrary();
         $nodes   = array();
         while ($stream->valid()) {
-            // default tags
+            // template tags
             $stream->consumeIf(Token::T_OPEN_TAG, Token::T_CLOSE_TAG);
             
             if ($until && $stream->matches($until)) {
                 return $nodes;
             }
             
-            // print tags
+            // print tag
             if ($token = $stream->consumeIf(Token::T_OPEN_PRINT_TAG)) {
                 $expression = $this->parseExpression($stream);
                 $nodes[]    = new PrintNode(array($expression), $token->getLineNumber());
