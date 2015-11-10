@@ -11,7 +11,7 @@ use Curly\Parser\Token;
 use Curly\Util\Arrays;
 
 /**
- * 
+ * The Lexer is a concrete implementation of the {@link LexerInterface}.
  *
  * @author Chris Harris
  * @version 1.0.0
@@ -31,12 +31,14 @@ class Lexer implements LexerInterface
      * @var array
      */
     private $tags = array(
-        'open'  => '{%',
-        'close' => '%}',
+        'open_tag'        => '{%',
+        'close_tag'       => '%}',
+        'open_print_tag'  => '{{',
+        'close_print_tag' => '}}',
     );
     
     /**
-     * A mapping between punctuations and their respective token types.
+     * A collection which maps symbols to token types.
      *
      * @var array
      */
@@ -133,8 +135,7 @@ class Lexer implements LexerInterface
             }
         }
         
-        $stream = new Stream($this->tokens);
-        return new TokenStream($stream);
+        return new TokenStream(new Stream($this->tokens));
     }
     
     /**
@@ -147,24 +148,25 @@ class Lexer implements LexerInterface
      */
     private function tokenizeText()
     {            
-        $lineNumber = $this->reader->getLineNumber();
+        $reader = $this->reader;
         if (($tagPos = array_shift($this->tagPositions)) !== null) {
-            if (($amount = $tagPos[1] - $this->reader->getPosition()) > 0) {
-                $this->pushToken(Token::T_TEXT, $this->reader->readChar($amount), $lineNumber);
+            if (($amount = $tagPos[1] - $reader->getPosition()) > 0) {
+                $this->pushToken(Token::T_TEXT, $reader->readChar($amount), $reader->getLineNumber());
             }
 
-            $lineNumber = $this->reader->getLineNumber();
-            if (($tag = $this->reader->readChar(strlen($tagPos[0]))) === $tagPos[0]) {
-                // illegal tag since were already interpreting plain text.
-                if ($tag === $this->tags['close']) {
-                    throw new SyntaxException(sprintf('Unexpected "%s"', $tag), $lineNumber);
-                }
-            
-                $this->pushToken(Token::T_OPEN_TAG, $tag, $lineNumber);
-                $this->state = self::STATE_LANG;
-            }            
-        } else if ($this->reader->hasNextChar()) {
-            $this->pushToken(Token::T_TEXT, trim($this->reader->readToEnd(), "\n\r\0\x0B"), $lineNumber);
+            $tag = $reader->readChar(strlen($tagPos[0]));
+            switch ($tag) {
+                case $this->tags['open_tag']:
+                    $this->pushToken(Token::T_OPEN_TAG, $tag, $reader->getLineNumber());
+                    break;
+                case $this->tags['open_print_tag']:
+                    $this->pushToken(Token::T_OPEN_PRINT_TAG, $tag, $reader->getLineNumber());
+                    break;
+            }
+            $this->state = self::STATE_LANG;
+
+        } else if ($reader->hasNextChar()) {
+            $this->pushToken(Token::T_TEXT, trim($reader->readToEnd(), "\n\r\0\x0B"), $reader->getLineNumber());
         }
     }
     
@@ -191,65 +193,72 @@ class Lexer implements LexerInterface
         if ($this->reader->matches('/\s+/A', $matches)) {
             $this->reader->skip(strlen($matches[0]));
         }
-
+    
+        $reader  = $this->reader;
         $matches = array();
         // code tags
-        if ($this->reader->matches($this->getTagRegex(), $matches)) {
-            // illegal tag since were already interpreting code.
-            if ($matches[1] === $this->tags['open']) {
-                throw new SyntaxException(sprintf('Unexpected "%s"', $matches[0]), $this->reader->getLineNumber());
+        if ($reader->matches($this->getTagRegex(), $matches)) {
+            switch ($matches[1]) {
+                case $this->tags['close_tag']:
+                    $this->pushToken(Token::T_CLOSE_TAG, $matches[1], $reader->getLineNumber());
+                    break;
+                case $this->tags['close_print_tag']:
+                    $this->pushToken(Token::T_CLOSE_PRINT_TAG, $matches[1], $reader->getLineNumber());
+                    break;
+                default:
+                    throw new SyntaxException(sprintf('Unexpected "%s"', $matches[0]), $reader->getLineNumber());
+                    break;
             }
-            
-            $this->pushToken(Token::T_CLOSE_TAG, $matches[1], $this->reader->getLineNumber());
+
             $this->state = self::STATE_TEXT;
         }
         // operator symbols
-        else if ($this->reader->matches($this->getOperatorRegex(), $matches)) {
-            $this->pushToken(Token::T_OPERATOR, $matches[1], $this->reader->getLineNumber());
+        else if ($reader->matches($this->getOperatorRegex(), $matches)) {
+            $this->pushToken(Token::T_OPERATOR, $matches[1], $reader->getLineNumber());
         } 
         // strings
-        else if ($this->reader->matches($this->regexes['string'], $matches)) {
-            $this->pushToken(Token::T_STRING, stripslashes($matches[2]), $this->reader->getLineNumber());
+        else if ($reader->matches($this->regexes['string'], $matches)) {
+            $this->pushToken(Token::T_STRING, stripslashes($matches[2]), $reader->getLineNumber());
         } 
         // literals
-        else if ($this->reader->matches($this->regexes['literal'], $matches)) {
+        else if ($reader->matches($this->regexes['literal'], $matches)) {
             if (in_array(strtolower($matches[1]), array('true', 'false'))) {
-                $this->pushToken(Token::T_BOOLEAN, $matches[1], $this->reader->getLineNumber());
+                $this->pushToken(Token::T_BOOLEAN, $matches[1], $reader->getLineNumber());
             } else {
-                $this->pushToken(Token::T_NULL, $matches[1], $this->reader->getLineNumber());
+                $this->pushToken(Token::T_NULL, $matches[1], $reader->getLineNumber());
             }
         } 
         // numbers
-        else if ($this->reader->matches($this->regexes['number'], $matches)) {
+        else if ($reader->matches($this->regexes['number'], $matches)) {
             if (ctype_digit($matches[1]) && $matches[1] <= PHP_INT_MAX) {
-                $this->pushToken(Token::T_INTEGER, $matches[1], $this->reader->getLineNumber());
+                $this->pushToken(Token::T_INTEGER, $matches[1], $reader->getLineNumber());
             } else {
-                $this->pushToken(Token::T_FLOAT, $matches[1], $this->reader->getLineNumber());
+                $this->pushToken(Token::T_FLOAT, $matches[1], $reader->getLineNumber());
             }
         } 
         // variables
-        else if ($this->reader->matches($this->regexes['variable'], $matches)) {
-            $this->pushToken(Token::T_VARIABLE, $matches[1], $this->reader->getLineNumber());
+        else if ($reader->matches($this->regexes['variable'], $matches)) {
+            $this->pushToken(Token::T_VARIABLE, $matches[1], $reader->getLineNumber());
         }
         // identifiers
-        else if ($this->reader->matches($this->regexes['identifier'], $matches)) {
-            $this->pushToken(Token::T_IDENTIFIER, $matches[1], $this->reader->getLineNumber());
+        else if ($reader->matches($this->regexes['identifier'], $matches)) {
+            $this->pushToken(Token::T_IDENTIFIER, $matches[1], $reader->getLineNumber());
         }
         // punctuation
-        else if ($this->reader->matches($this->getPunctutationRegex(), $matches)) {
+        else if ($reader->matches($this->getPunctutationRegex(), $matches)) {
             $value = $matches[1];
             $type  = (isset($this->punctuations[$value])) ? $this->punctuations[$value] : Token::T_UNKNOWN;
                 
-            $this->pushToken($type, $value, $this->reader->getLineNumber());
+            $this->pushToken($type, $value, $reader->getLineNumber());
         }
 
-        if ($this->reader->hasNextChar()) {
+        if ($reader->hasNextChar()) {
             if (!isset($matches[0])) {
-                throw new SyntaxException(sprintf('Unknown character "%s" was found', $this->reader->readWord()), $this->reader->getLineNumber());
+                throw new SyntaxException(sprintf('Unknown character "%s" was found', $reader->readWord()), $reader->getLineNumber());
             }
             
             // skip the whole sequence of characters that matched.
-            $this->reader->skip(strlen($matches[0]));
+            $reader->skip(strlen($matches[0]));
         }
     }
     
@@ -289,10 +298,10 @@ class Lexer implements LexerInterface
         if (!isset($this->regexes['tag'])) {
             $patterns = array();
             foreach ($this->tags as $tag) {
-                $patterns[] = sprintf('%s\n?', preg_quote($tag, '/'));
+                $patterns[] = preg_quote($tag, '/');
             }
                         
-            $this->regexes['tag'] = sprintf('/(%s)/A', implode('|', $patterns));
+            $this->regexes['tag'] = sprintf('/(%s)\n?/A', implode('|', $patterns));
         }
 
         return $this->regexes['tag'];
@@ -323,7 +332,7 @@ class Lexer implements LexerInterface
      * Set the input data that the lexer will tokenize.
      *
      * @param string $input the data that will be tokenized.
-     * @throws InvalidArgumentException if the given argument is not a string.
+     * @throws InvalidArgumentException if the specified argument is not a string.
      */
     private function setInput($input)
     {        
@@ -336,7 +345,7 @@ class Lexer implements LexerInterface
 	    }
     
         $normalized = str_replace(array("\r\n", "\r"), "\n", rtrim($input, "\r\n"));
-        $regex = sprintf('/(%s)/i', preg_quote($this->tags['open'], '/'));
+        $regex = sprintf('/(%s|%s)/i', preg_quote($this->tags['open_tag'], '/'), preg_quote($this->tags['open_print_tag'], '/'));
         preg_match_all($regex, $normalized, $matches, PREG_OFFSET_CAPTURE);
         
         $this->tagPositions = $matches[0];

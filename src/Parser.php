@@ -5,6 +5,7 @@ namespace Curly;
 use Curly\Ast\Node;
 use Curly\Ast\NodeInterface;
 use Curly\Ast\Node\FilterNode;
+use Curly\Ast\Node\PrintNode;
 use Curly\Ast\Node\TextNode;
 use Curly\Ast\Node\Expression\ArrayAccessNode;
 use Curly\Ast\Node\Expression\VariableNode;
@@ -14,6 +15,7 @@ use Curly\Parser\TokenInterface;
 use Curly\Parser\Token;
 
 /**
+ * The Parser is a concrete implementation of the {@link ParserInterface}.
  *
  * @author Chris Harris
  * @version 1.0.0
@@ -29,7 +31,7 @@ class Parser implements ParserInterface
     private $engine;
 
     /**
-     * A stream containing tokens.
+     * A stream containing tokens to parse.
      *
      * @var TokenStream
      */
@@ -50,6 +52,7 @@ class Parser implements ParserInterface
      */
     public function parse(TokenStream $stream, $until = null)
     {   
+        // second argument if provided must be array.
         if (func_get_args() >= 2) {
             $until = (is_array($until)) ? $until : array_slice(func_get_args(), 1);
         }
@@ -58,22 +61,27 @@ class Parser implements ParserInterface
 
         $library = $this->getLibrary();
         $nodes   = array();
-        while ($stream->valid()) {            
+        while ($stream->valid()) {
+            // default tags
+            $stream->consumeIf(Token::T_OPEN_TAG, Token::T_CLOSE_TAG);
+            
             if ($until && $stream->matches($until)) {
                 return $nodes;
             }
             
-            $token = $stream->current();
-            // code tag
-            if ($stream->matches(Token::T_OPEN_TAG, Token::T_CLOSE_TAG)) {
-                $stream->consume();
-            } 
+            // print tags
+            if ($token = $stream->consumeIf(Token::T_OPEN_PRINT_TAG)) {
+                $expression = $this->parseExpression($stream);
+                $nodes[]    = new PrintNode(array($expression), $token->getLineNumber());
+                $stream->expects(Token::T_CLOSE_PRINT_TAG);
+            }
             // plain text
-            else if ($stream->consumeIf(Token::T_TEXT) !== null) {
+            else if ($token = $stream->consumeIf(Token::T_TEXT)) {
                 $nodes[] = new TextNode($token->getValue(), $token->getLineNumber());
             } 
             // statement
             else if ($stream->matches(Token::T_IDENTIFIER)) {
+                $token     = $stream->current();
                 $statement = $library->getStatement($token->getValue());
                 if ($statement === null) {
                     throw new SyntaxException(sprintf('Illegal identifier "%s".', $token->getValue()), $token->getLineNumber());
