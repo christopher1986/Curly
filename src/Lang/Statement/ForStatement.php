@@ -24,8 +24,8 @@ class ForStatement implements StatementInterface
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
-        $forToken = $stream->current();
-        
+        $token = $stream->current();
+      
         $stream->expects(sprintf('%s:for', Token::T_IDENTIFIER));
         $stream->expects(Token::T_OPEN_PARENTHESIS);
         
@@ -37,13 +37,13 @@ class ForStatement implements StatementInterface
         
         $stream->expects(Token::T_CLOSE_PARENTHESIS);
         $stream->expects(Token::T_COLON);
-        
+
         $children = $parser->parse($stream, array(sprintf('%s:endfor', Token::T_IDENTIFIER)));
-        
+
         $stream->expects(sprintf('%s:endfor', Token::T_IDENTIFIER));
         $stream->expects(Token::T_SEMICOLON, Token::T_CLOSE_TAG);
         
-        return new ForNode($loopVars, $sequence, $children, $forToken->getLineNumber());
+        return new ForNode($loopVars, $sequence, $children, $token->getLineNumber());
     }
     
     /**
