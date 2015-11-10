@@ -3,8 +3,6 @@
 namespace Curly;
 
 use Curly\Collection\HashSet;
-use Curly\Io\Stream\OutputStream;
-use Curly\Io\Stream\PrintStream;
 use Curly\Lang\Filter\JoinFilter;
 use Curly\Lang\Filter\LowerFilter;
 use Curly\Lang\Filter\UpperFilter;
@@ -50,14 +48,7 @@ use Curly\Parser\Exception\TemplateNotFoundException;
  * @since 1.0.0
  */
 final class Engine implements EngineInterface, LibraryAwareInterface
-{    
-    /**
-     * Default PHP output stream.
-     *
-     * @var StreamInterface
-     */
-    private static $out = null;
-
+{
     /**
      * A template library.
      *
@@ -199,22 +190,6 @@ final class Engine implements EngineInterface, LibraryAwareInterface
         }
         
         return new Template($content, $this);
-    }
-    
-    /**
-     * Returns {@link PrintStream} instance that decorates a read-write stream which stores 
-     * temporary data in a file-like manner. Use the {@link PrintStream::toString()} method 
-     * to read data stored by the underlying output stream.
-     *
-     * @return PrintStream the stream to which data will be written.
-     */
-    public static function out()
-    {
-        if (self::$out === null) {
-            self::$out = new PrintStream(new OutputStream());
-        }
-        
-        return self::$out;
     }
 
     /**
