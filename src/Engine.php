@@ -5,6 +5,7 @@ namespace Curly;
 use Curly\Collection\HashSet;
 use Curly\Io\Stream\OutputStream;
 use Curly\Io\Stream\PrintStream;
+use Curly\Lang\Filter\JoinFilter;
 use Curly\Lang\Filter\LowerFilter;
 use Curly\Lang\Filter\UpperFilter;
 use Curly\Lang\Literal\ArrayLiteral;
@@ -239,6 +240,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultFilters()
     {
         $filters = array(
+            'join'  => new JoinFilter(),
             'lower' => new LowerFilter(),
             'upper' => new UpperFilter(),
         );
