@@ -23,7 +23,7 @@ class LiteralNode extends Node
     private $value;
 
     /**
-     * Construct a new Literal node.
+     * Construct a new LiteralNode.
      *
      * @param mixed $value the value for this literal node.
      * @param int $lineNumber (optional) the line number.

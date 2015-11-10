@@ -8,7 +8,7 @@ use Curly\Ast\NodeInterface;
 use Curly\Io\Stream\OutputStreamInterface;
 
 /**
- *
+ * The {@link AbstractBinaryNode} provides a skeleton implementation for all binary nodes.
  *
  * @author Chris Harris
  * @version 1.0.0

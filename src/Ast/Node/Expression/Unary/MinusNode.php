@@ -7,7 +7,7 @@ use Curly\Ast\Node\Expression\AbstractUnaryNode;
 use Curly\Io\Stream\OutputStreamInterface;
 
 /**
- * The NotNode is responsible for rendering the arithmetic-negation operator and it's operand.
+ * The MinusNode is responsible for rendering the arithmetic-negation operator and it's operand.
  *
  * @author Chris Harris
  * @version 1.0.0

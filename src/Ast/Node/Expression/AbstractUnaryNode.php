@@ -8,7 +8,7 @@ use Curly\Ast\NodeInterface;
 use Curly\Io\Stream\OutputStreamInterface;
 
 /**
- *
+ * The {@link AbstractUnaryNode} provides a skeleton implementation for all unary nodes.
  *
  * @author Chris Harris
  * @version 1.0.0
