@@ -8,7 +8,8 @@ use Curly\Lang\StatementInterface;
 use Curly\Lang\TagInterface;
 
 /** 
- *
+ * The LibraryInterface contains a collection of language constructs that can be accessed and used by
+ * the lexer during the lexical analysis or by the parser for syntactical analysis.
  * 
  * @author Chris Harris 
  * @version 1.0.0
