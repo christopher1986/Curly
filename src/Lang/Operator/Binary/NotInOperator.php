@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\NotInNode;
+use Curly\Ast\Node\Expression\Binary\BinaryNotIn;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class NotInOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new NotInNode($left, $right, $lineNumber, $flags);
+        return new BinaryNotIn($left, $right, $lineNumber, $flags);
     }
 }
 

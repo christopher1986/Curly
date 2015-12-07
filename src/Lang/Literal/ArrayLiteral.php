@@ -2,7 +2,7 @@
 
 namespace Curly\Lang\Literal;
 
-use Curly\Ast\Node\Expression\ArrayNode;
+use Curly\Ast\Node\Expression\ArrayLiteral as ArrayLiteralNode;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
 use Curly\Parser\Stream\TokenStream;
@@ -41,9 +41,9 @@ class ArrayLiteral implements LiteralInterface
         // Consule open bracket.
         $token = $stream->consume();
 
-        $items = array();
+        $entries = array();
         while (!$stream->matches(Token::T_CLOSE_BRACKET)) {
-            $items[] = $parser->parseExpression($stream);
+            $entries[] = $parser->parseExpression($stream);
             
             if (!$stream->matches(Token::T_COMMA, Token::T_CLOSE_BRACKET)) {
                 throw new SyntaxException(sprintf('Expected (",", "]"); received "%s"', $stream->current()->getValue()), $stream->current()->getLineNumber());
@@ -54,6 +54,6 @@ class ArrayLiteral implements LiteralInterface
         // Consume close bracket.
         $stream->consume();
 
-        return new ArrayNode($items, $token->getLineNumber(), ArrayNode::TYPE_NUMERIC);
+        return new ArrayLiteralNode($entries, $token->getLineNumber(), ArrayLiteralNode::TYPE_NUMERIC);
     }
 }

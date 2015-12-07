@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\GreaterNode;
+use Curly\Ast\Node\Expression\Binary\BinaryGreater;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class GreaterOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new GreaterNode($left, $right, $lineNumber, $flags);
+        return new BinaryGreater($left, $right, $lineNumber, $flags);
     }
 }
 

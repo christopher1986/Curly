@@ -2,7 +2,7 @@
 
 namespace Curly\Lang\Tag;
 
-use Curly\Ast\Node\TagNode;
+use Curly\Ast\Node\TemplateTag;
 use Curly\ParserInterface;
 use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\Token;
@@ -37,6 +37,6 @@ abstract class AbstractTag implements TagInterface
 
         $stream->expects(Token::T_CLOSE_PARENTHESIS);
 
-        return new TagNode($this, $args, $token->getLineNumber());
+        return new TemplateTag($this, $args, $token->getLineNumber());
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Curly\Lang\Statement;
 
-use Curly\Ast\Node\ConditionalNode;
-use Curly\Ast\Node\IfNode;
+use Curly\Ast\Node\Conditional;
+use Curly\Ast\Node\IfStatement as IfStatementNode;
 use Curly\ParserInterface;
 use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\Token;
@@ -33,21 +33,21 @@ class IfStatement implements StatementInterface
             $stream->expects(Token::T_COLON);
             
             $children = $parser->parse($stream, sprintf('%s:endif', Token::T_IDENTIFIER));
-            $conditions[] = new ConditionalNode(null, $children, $token->getLineNumber());
+            $conditions[] = new Conditional(null, $children, $token->getLineNumber());
         }
         
         $stream->expects(sprintf('%s:endif', Token::T_IDENTIFIER));
         $stream->expects(Token::T_SEMICOLON, Token::T_CLOSE_TAG);
         
-        return new IfNode($conditions, $startToken->getLineNumber());
+        return new IfStatementNode($conditions, $startToken->getLineNumber());
     }
     
     /**
-     * Returns a collection of {@link ConditionalNode} instances.
+     * Returns a collection of {@link Conditional} instances.
      *
      * @param ParserInterface $parser the template parser.
      * @param TokenStream the stream of tokens to parse.
-     * @return array a collection of {@link ConditionalNode} instances.
+     * @return array a collection of {@link Conditional} instances.
      */
     private function parseConditions(ParserInterface $parser, TokenStream $stream)
     {
@@ -74,7 +74,7 @@ class IfStatement implements StatementInterface
                 sprintf('%s:endif', Token::T_IDENTIFIER),
             ));
             
-            $conditions[] = new ConditionalNode($expression, $children, $token->getLineNumber());
+            $conditions[] = new Conditional($expression, $children, $token->getLineNumber());
         }
         
         return $conditions;

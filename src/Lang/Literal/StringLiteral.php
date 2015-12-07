@@ -2,7 +2,7 @@
 
 namespace Curly\Lang\Literal;
 
-use Curly\Ast\Node\Expression\ScalarNode;
+use Curly\Ast\Node\Expression\StringLiteral as StringLiteralNode;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
 use Curly\Parser\Stream\TokenStream;
@@ -31,6 +31,6 @@ class StringLiteral implements LiteralInterface
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
         $token = $stream->consume();
-        return new ScalarNode($token->getValue(), $token->getLineNumber(), ScalarNode::TYPE_STRING);
+        return new StringLiteralNode($token->getValue(), $token->getLineNumber());
     }
 }

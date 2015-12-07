@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\RemainderNode;
+use Curly\Ast\Node\Expression\Binary\BinaryRemainder;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,6 +36,6 @@ class RemainderOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new RemainderNode($left, $right, $lineNumber, $flags);
+        return new BinaryRemainder($left, $right, $lineNumber, $flags);
     }
 }

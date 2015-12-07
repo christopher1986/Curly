@@ -2,8 +2,8 @@
 
 namespace Curly\Lang\Literal;
 
-use Curly\Ast\Node\EntryNode;
-use Curly\Ast\Node\Expression\ArrayNode;
+use Curly\Ast\Node\Entry;
+use Curly\Ast\Node\Expression\ArrayLiteral as ArrayLiteralNode;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
 use Curly\Parser\Stream\TokenStream;
@@ -39,8 +39,8 @@ class DictionaryLiteral implements LiteralInterface
      */
     public function parse(ParserInterface $parser, TokenStream $stream)
     {        
-        // Consume open bracket.
-        $token   = $stream->consume();
+        // consume open bracket.
+        $token = $stream->consume();
         
         $entries = array();        
         while (!$stream->matches(Token::T_CLOSE_BRACE)) {
@@ -52,10 +52,9 @@ class DictionaryLiteral implements LiteralInterface
             $stream->consumeIf(Token::T_COMMA);
         }
         
-        // Consume close brace.
-        $stream->consume();
+        $stream->expects(Token::T_CLOSE_BRACE);
         
-        return new ArrayNode($entries, $token->getLineNumber(), ArrayNode::TYPE_ASSOCIATIVE);
+        return new ArrayLiteralNode($entries, $token->getLineNumber(), ArrayLiteralNode::TYPE_ASSOCIATIVE);
     }
     
     /**
@@ -63,7 +62,7 @@ class DictionaryLiteral implements LiteralInterface
      *
      * @param ParserInterface $parser the template parser.
      * @param TokenStream the stream of tokens to parse.
-     * @return EntryNode an entry node.
+     * @return Entry an entry node.
      */
     private function parseEntry(ParserInterface $parser, TokenStream $stream)
     {
@@ -75,6 +74,6 @@ class DictionaryLiteral implements LiteralInterface
         
         $stream->expects(Token::T_COLON);
 
-        return new EntryNode($key, $parser->parseExpression($stream));
+        return new Entry($key, $parser->parseExpression($stream));
     }
 }

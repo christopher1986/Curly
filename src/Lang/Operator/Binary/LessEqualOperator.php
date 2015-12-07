@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\LessEqualNode;
+use Curly\Ast\Node\Expression\Binary\BinaryLessEqual;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class LessEqualOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new LessEqualNode($left, $right, $lineNumber, $flags);
+        return new BinaryLessEqual($left, $right, $lineNumber, $flags);
     }
 }
 

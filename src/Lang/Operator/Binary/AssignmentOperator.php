@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\AssignmentNode;
+use Curly\Ast\Node\Expression\Binary\BinaryAssignment;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -47,6 +47,6 @@ class AssignmentOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new AssignmentNode($left, $right, $lineNumber, $flags);
+        return new BinaryAssignment($left, $right, $lineNumber, $flags);
     }
 }

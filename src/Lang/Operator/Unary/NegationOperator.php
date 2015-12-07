@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Unary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Unary\NegationNode;
+use Curly\Ast\Node\Expression\Unary\UnaryNegation;
 use Curly\Lang\Operator\AbstractUnaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class NegationOperator extends AbstractUnaryOperator
      */
     public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
     {
-        return new NegationNode($node, $lineNumber, $flags);
+        return new UnaryNegation($node, $lineNumber, $flags);
     }
 }
 

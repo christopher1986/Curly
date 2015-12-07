@@ -16,12 +16,12 @@ use Curly\Lang\OperatorInterface;
 abstract class AbstractUnaryOperator implements OperatorInterface
 {
     /**
-     * Returns a new Unary node for the specified expression node.
+     * Returns a unary node for the specified expression node.
      *
      * @param NodeInterface $node the expression node.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
-     * @return Unary a Unary node.
+     * @return NodeInterface a unary node.
      */
     abstract public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00);
 }

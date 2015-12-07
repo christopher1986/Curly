@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\OrNode;
+use Curly\Ast\Node\Expression\Binary\BinaryOr;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class OrOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new OrNode($left, $right, $lineNumber, $flags);
+        return new BinaryOr($left, $right, $lineNumber, $flags);
     }
 }
 

@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Unary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Unary\TypeofNode;
+use Curly\Ast\Node\Expression\Unary\Typeof;
 use Curly\Lang\Operator\AbstractUnaryOperator;
 
 /**
@@ -36,6 +36,6 @@ class TypeofOperator extends AbstractUnaryOperator
      */
     public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
     {
-        return new TypeofNode($node, $lineNumber, $flags);
+        return new Typeof($node, $lineNumber, $flags);
     }
 }

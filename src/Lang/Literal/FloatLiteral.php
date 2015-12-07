@@ -2,7 +2,7 @@
 
 namespace Curly\Lang\Literal;
 
-use Curly\Ast\Node\Expression\ScalarNode;
+use Curly\Ast\Node\Expression\NumberLiteral as NumberLiteralNode;
 use Curly\Lang\LiteralInterface;
 use Curly\ParserInterface;
 use Curly\Parser\Stream\TokenStream;
@@ -31,6 +31,6 @@ class FloatLiteral implements LiteralInterface
     public function parse(ParserInterface $parser, TokenStream $stream)
     {
         $token = $stream->consume();
-        return new ScalarNode((float) $token->getValue(), $token->getLineNumber(), ScalarNode::TYPE_FLOAT);
+        return new NumberLiteralNode((float) $token->getValue(), $token->getLineNumber(), NumberLiteralNode::TYPE_FLOAT);
     }
 }

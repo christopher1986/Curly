@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\AdditionNode;
+use Curly\Ast\Node\Expression\Binary\BinaryAddition;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,6 +36,6 @@ class AdditionOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {    
-        return new AdditionNode($left, $right, $lineNumber, $flags);
+        return new BinaryAddition($left, $right, $lineNumber, $flags);
     }
 }

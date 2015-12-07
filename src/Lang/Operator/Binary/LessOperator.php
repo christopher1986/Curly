@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Binary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Binary\LessNode;
+use Curly\Ast\Node\Expression\Binary\BinaryLess;
 use Curly\Lang\Operator\AbstractBinaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class LessOperator extends AbstractBinaryOperator
      */
     public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00)
     {
-        return new LessNode($left, $right, $lineNumber, $flags);
+        return new BinaryLess($left, $right, $lineNumber, $flags);
     }
 }
 

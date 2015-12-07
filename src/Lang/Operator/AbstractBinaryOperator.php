@@ -63,13 +63,13 @@ abstract class AbstractBinaryOperator implements OperatorInterface
     }
     
     /**
-     * Returns a new Binary node for the specified expression nodes.
+     * Returns a binary node for the specified expression nodes.
      *
      * @param NodeInterface $left the left expression node.
      * @param NodeInterface $right the right expression node.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
-     * @return Unary a Unary node.
+     * @return NodeInterface a binary node
      */
     abstract public function createNode(NodeInterface $left, NodeInterface $right, $lineNumber = -1, $flags = 0x00);
 }

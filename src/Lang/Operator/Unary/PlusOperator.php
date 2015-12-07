@@ -3,7 +3,7 @@
 namespace Curly\Lang\Operator\Unary;
 
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\Expression\Unary\PlusNode;
+use Curly\Ast\Node\Expression\Unary\UnaryPlus;
 use Curly\Lang\Operator\AbstractUnaryOperator;
 
 /** 
@@ -36,7 +36,7 @@ class PlusOperator extends AbstractUnaryOperator
      */
     public function createNode(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
     {
-        return new PlusNode($node, $lineNumber, $flags);
+        return new UnaryPlus($node, $lineNumber, $flags);
     }
 }
 

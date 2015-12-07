@@ -2,7 +2,7 @@
 
 namespace Curly\Lang\Literal;
 
-use Curly\Ast\Node\Expression\ScalarNode;
+use Curly\Ast\Node\Expression\BooleanLiteral as BooleanLiteralNode;
 use Curly\Lang\LiteralInterface;
 use Curly\Parser\Stream\TokenStream;
 use Curly\ParserInterface;
@@ -34,6 +34,6 @@ class BooleanLiteral implements LiteralInterface
     {
         $token = $stream->consume();
         $value = filter_var($token->getValue(), FILTER_VALIDATE_BOOLEAN);
-        return new ScalarNode($value, $token->getLineNumber(), ScalarNode::TYPE_BOOLEAN);
+        return new BooleanLiteralNode($value, $token->getLineNumber());
     }
 }

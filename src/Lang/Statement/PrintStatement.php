@@ -2,7 +2,7 @@
 
 namespace Curly\Lang\Statement;
 
-use Curly\Ast\Node\PrintNode;
+use Curly\Ast\Node\PrintStatement as PrintStatementNode;
 use Curly\ParserInterface;
 use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\Token;
@@ -30,6 +30,6 @@ class PrintStatement implements StatementInterface
         
         $stream->expects(Token::T_SEMICOLON, Token::T_CLOSE_TAG);
         
-        return new PrintNode($expression, $token->getLineNumber());
+        return new PrintStatementNode($expression, $token->getLineNumber());
     }
 }
