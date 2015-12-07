@@ -7,11 +7,6 @@ namespace Curly;
  * {@link set_error_handler($error_handler, $error_types)} function and will it throw a
  * {@link Exception} or one of it's subclasses containing the actual error message.
  *
- * A concrete implemention of this interface should be registered in the following manner:
- *
- * <code>
- *     CurlyErrorHandler::register(E_ALL | E_STRICT);
- * </code>
  *
  * This interface is capable of restoring the previous error handler by simply calling
  * the {@link ErrorHandlerInterface::restore()} method.
