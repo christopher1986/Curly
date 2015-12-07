@@ -4,11 +4,11 @@ namespace Curly;
 
 use Curly\Ast\Node;
 use Curly\Ast\NodeInterface;
-use Curly\Ast\Node\FilterNode;
-use Curly\Ast\Node\PrintNode;
-use Curly\Ast\Node\TextNode;
-use Curly\Ast\Node\Expression\ArrayAccessNode;
-use Curly\Ast\Node\Expression\VariableNode;
+use Curly\Ast\Node\PrintStatement;
+use Curly\Ast\Node\TemplateFilter;
+use Curly\Ast\Node\Text;
+use Curly\Ast\Node\Expression\ArrayAccess;
+use Curly\Ast\Node\Expression\Variable;
 use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\Stream\TokenStream;
 use Curly\Parser\TokenInterface;
@@ -70,12 +70,12 @@ class Parser implements ParserInterface
             
             // print tags
             if ($token = $stream->consumeIf(Token::T_OPEN_PRINT_TAG)) {
-                $nodes[] = new PrintNode($this->parseExpression($stream), $token->getLineNumber());
+                $nodes[] = new PrintStatement($this->parseExpression($stream), $token->getLineNumber());
                 $stream->expects(Token::T_CLOSE_PRINT_TAG);
             }
             // plain text
             else if ($token = $stream->consumeIf(Token::T_TEXT)) {
-                $nodes[] = new TextNode($token->getValue(), $token->getLineNumber());
+                $nodes[] = new Text($token->getValue(), $token->getLineNumber());
             } 
             // statements
             else if ($stream->matches(Token::T_IDENTIFIER)) {
@@ -154,7 +154,7 @@ class Parser implements ParserInterface
         } 
         // variables
         else if ($stream->matches(Token::T_VARIABLE)) {
-            $node = new VariableNode($token->getValue(), $token->getLineNumber());
+            $node = new Variable($token->getValue(), $token->getLineNumber());
             $stream->consume();
             
             if ($stream->matches(Token::T_OPEN_BRACKET)) {
@@ -179,6 +179,49 @@ class Parser implements ParserInterface
     }
     
     /**
+     * Parse tokens that which may succeed an expression.
+     *
+     * @param TokenStream a stream of tokens to parse.
+     * @param NodeInterface the node that proceeds the tokens to parse.
+     * @return NodeInterface a node for the postfix expression.
+     * @see Parser::parseObjectAccessExpression($stream, $node)
+     * @see Parser::parseArrayAccessExpression($stream, $node)
+     * @see Parser::parseFilterExpression($stream, $node)
+     */
+    private function parsePostFixExpression($stream, NodeInterface $node)
+    {
+        // object access
+        if ($stream->matches(Token::T_PERIOD)) {
+            //$node = $this->parseObjectAccessExpression($stream, $node);
+        } 
+        // array access
+        else if ($stream->matches(Token::T_OPEN_BRACKET)) {
+            $node = $this->parseArrayAccessExpression($stream, $node);
+        } 
+        // filters
+        else if ($stream->matches(Token::T_PIPELINE)) {
+            $node = $this->parseFilterExpression($stream, $node);
+        }
+        
+        return $node;
+    }
+    
+    private function parseObjectAccessExpression($stream, NodeInterface $node)
+    {
+        $token = $stream->expects(Token::T_IDENTIFIER);
+        if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS)) {
+            $args = array();
+            do {
+                $args[] = $this->parseExpression($stream);
+            } while ($stream->consumeIf(Token::T_COMMA));
+           
+            $stream->expects(Token::T_CLOSE_PARENTHESIS);             
+        }
+        
+        return new PropertyAccess($node, $args, $token->getLineNumber());
+    }
+    
+    /**
      * Parse an array access expression.
      *
      * The following examples are all valid array access expressions:
@@ -192,7 +235,7 @@ class Parser implements ParserInterface
      *
      * @param TokenStream a stream of tokens to parse.
      * @param NodeInterface the array node to access.
-     * @return ArrayAccessNode an array access node.
+     * @return ArrayAccess an array access node.
      * @throws SyntaxException if the current token is not an open bracket.
      */
     private function parseArrayAccessExpression($stream, NodeInterface $node)
@@ -204,7 +247,7 @@ class Parser implements ParserInterface
             $stream->expects(Token::T_CLOSE_BRACKET);
         }
         
-        return new ArrayAccessNode($node, $indices, $token->getLineNumber());
+        return new ArrayAccess($node, $indices, $token->getLineNumber());
     }
      
     /**
@@ -242,7 +285,7 @@ class Parser implements ParserInterface
                 $stream->expects(Token::T_CLOSE_PARENTHESIS);                
             }
             
-            $node = new FilterNode($node, $filter, $args, $token->getLineNumber());
+            $node = new TemplateFilter($node, $filter, $args, $token->getLineNumber());
         }
         
         return $node;
