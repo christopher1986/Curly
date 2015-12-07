@@ -17,6 +17,6 @@ class LowerFilter
      */
     public function filter($value)
     {
-        return (is_string($value)) ? strtolower($value) : '';
+        return (is_string($value)) ? strtolower($value) : $value;
     }
 }
