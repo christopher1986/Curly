@@ -6,6 +6,7 @@ use Curly\Common\ComparatorInterface;
 use Curly\Common\EquatableInterface;
 
 /**
+ * This utility class contains array related operations.
  *
  * @author Chris Harris
  * @version 1.0.0
