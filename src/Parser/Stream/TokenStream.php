@@ -105,7 +105,8 @@ class TokenStream implements StreamInterface
      * @return TokenInterface|null the token at the current stream position, or null on failure.
      */ 
     public function consumeIf($types)
-    {
+    {      
+        $types = (is_array($types)) ? $types : func_get_args();
         return ($this->matches($types)) ? $this->consume() : null;
     }
     
@@ -187,7 +188,7 @@ class TokenStream implements StreamInterface
                 
         $types = (is_array($types)) ? $types : func_get_args();
 
-        $token = $this->current();
+        $token = $this->current();       
         foreach ($types as $type) {
             list($type, $value) = array_pad(explode(':', $type), 2, null);
 
