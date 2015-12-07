@@ -6,6 +6,6 @@ class UpperFilter
 {
     public function filter($value)
     {
-        return (is_string($value)) ? strtoupper($value) : '';
+        return (is_string($value)) ? strtoupper($value) : $value;
     }
 }
