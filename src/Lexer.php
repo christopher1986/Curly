@@ -134,7 +134,7 @@ class Lexer implements LexerInterface
                     break;
             }
         }
-        
+                    
         return new TokenStream(new Stream($this->tokens));
     }
     
@@ -189,7 +189,7 @@ class Lexer implements LexerInterface
      */
     private function tokenizeLang()
     {    
-        // whitespace is ignored because it has no special meaning.
+        // ignore whitespace.
         if ($this->reader->matches('/\s+/A', $matches)) {
             $this->reader->skip(strlen($matches[0]));
         }
