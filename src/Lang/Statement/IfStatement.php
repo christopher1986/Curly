@@ -64,7 +64,7 @@ class IfStatement implements StatementInterface
             $stream->expects(Token::T_OPEN_PARENTHESIS);
             
             $expression = $parser->parseExpression($stream);
-            
+
             $stream->expects(Token::T_CLOSE_PARENTHESIS);
             $stream->expects(Token::T_COLON);
             
