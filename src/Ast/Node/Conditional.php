@@ -60,8 +60,8 @@ class Conditional extends Node
      */
     public function isTrue(ContextInterface $context, OutputStreamInterface $out)
     {
-        $satisfied = ($condition === null);
         $condition = $this->getCondition();
+        $satisfied = ($condition === null);
         if ($condition instanceof NodeInterface) {
             $satisfied = boolval($condition->render($context, $out));
         }
