@@ -30,6 +30,6 @@ class PrintStatement implements StatementInterface
         
         $stream->expects(Token::T_SEMICOLON, Token::T_CLOSE_TAG);
         
-        return new PrintNode(array($expression), $token->getLineNumber());
+        return new PrintNode($expression, $token->getLineNumber());
     }
 }

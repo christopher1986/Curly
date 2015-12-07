@@ -4,6 +4,7 @@ namespace Curly\Ast\Node;
 
 use Curly\ContextInterface;
 use Curly\Ast\Node;
+use Curly\Ast\NodeInterface;
 use Curly\Io\Stream\OutputStreamInterface;
 
 /**
@@ -15,6 +16,23 @@ use Curly\Io\Stream\OutputStreamInterface;
  */
 class PrintNode extends Node
 {    
+    /**
+     * Construct a new Print.
+     *
+     * @param NodeInterface $node the node whose rendered value to print.
+     * @param int $lineNumber (optional) the line number.
+     * @param int $flags (optional) a bitmask for one or more flags.
+     */
+    public function __construct(NodeInterface $node, $lineNumber = -1, $flags = 0x00)
+    {
+        $this->setChildren(array($node));
+        $this->setFlags($flags);
+        
+        if ($lineNumber >= 0) {
+            $this->setLineNumber($lineNumber);
+        }
+    }
+
     /**
      * {@inheritDoc}
      */
