@@ -22,8 +22,11 @@ use Curly\Common\Exception\WarningException;
 /**
  * A basic error handler that implements the {@link ErrorHandlerInterface}.
  *
- * This error handler will throw a {@link ErrorException} if an error or warning
- * occurs during the lexical or syntactical analysis.
+ * This error handler should be registered in the following manner:
+ *
+ * <code>
+ *     ErrorHandler::register(E_ALL | E_STRICT);
+ * </code>
  *
  * @author Chris Harris <c.harris@hotmail.com>
  * @version 1.0.0
