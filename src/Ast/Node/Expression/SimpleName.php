@@ -4,6 +4,7 @@ namespace Curly\Ast\Node\Expression;
 
 use Curly\ContextInterface;
 use Curly\Ast\Node;
+use Curly\Io\Stream\OutputStreamInterface;
 
 /**
  * The SimpleName node represents an identifier other than a keyword, boolean literal or null literal.
