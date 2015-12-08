@@ -23,85 +23,40 @@ class TemplateFilter extends Node
      * @var object
      */
     private $filter;
-
-    /**
-     * A collection of argument to pass to the filter.
-     *
-     * @var array
-     */
-    private $arguments = array();
     
     /**
      * Construct a new TemplateFilter.
      *
-     * @param NodeInterface the node on which to apply the filter.
      * @param object $filter the filter to invoke.
-     * @param array $arguments (optional) a collection of arguments passed to the filter.
+     * @param array $arguments (optional) a collection of arguments with which the filter will be invoked.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
      * @see TemplateFilter::setFilter($filter)
      * @see TemplateFilter::setArguments($arguments)
      */
-    public function __construct(NodeInterface $node, $filter, $arguments = array(), $lineNumber = -1, $flags = 0x00)
+    public function __construct($filter, array $arguments = array(), $lineNumber = -1, $flags = 0x00)
     {
-        parent::__construct(array($node), $lineNumber, $flags);
+        parent::__construct($arguments, $lineNumber, $flags);
         $this->setFilter($filter);
-        $this->setArguments($arguments);
     }
 
     /**
      * {@inheritDoc}
      */
     public function render(ContextInterface $context, OutputStreamInterface $out)
-    { 
-        $filter = $this->getFilter();
-        $nodes  = $this->getChildren();
-        $node   = reset($nodes);
-        
-        $args = array($node->render($context, $out));
-        foreach ($this->getArguments() as $node) {
+    {        
+        $args = array();
+        foreach ($this->getChildren() as $node) {
             $args[] = $node->render($context, $out);
         }
 
+        $filter   = $this->getFilter(); 
         $callable = array($filter, 'filter');
         if (!is_callable($callable)) {
-            throw new NoSuchMethodException(sprintf(
-                'missing publicly accessible "filter" method for %s',
-                get_class($filter)
-            ));
+            throw new NoSuchMethodException(sprintf('missing publicly accessible "filter" method for %s', get_class($filter)));
         }
         
         return call_user_func_array($callable, $args);
-    }
-    
-    /**
-     * {@inheritDoc}
-     *
-     * A TemplateFilter operates on a single node; providing more or less nodes will raise an exception.
-     *
-     * @throws LogicException if the specified collection contains more or less than one node.
-     */
-    public function setChildren($nodes)
-    {
-        if ($nodes instanceof \Traversable) {
-            $nodes = iterator_to_array($nodes);
-        }
-    
-        if (!is_array($nodes)) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects an array or instance of the Traversable; received "%s"',
-                __METHOD__,
-                (is_object($nodes) ? get_class($nodes) : gettype($nodes))
-            ));
-        } else if (($count = count($nodes)) != 1) {
-            throw new \LogicException(sprintf(
-                '%s: expects exactly 1 child node; received "%d" node(s)',
-                __METHOD__,
-                $count
-            ));
-        }
-
-        parent::setChildren($nodes);
     }
     
     /**
@@ -131,37 +86,5 @@ class TemplateFilter extends Node
     private function getFilter()
     {
         return $this->filter;
-    }
-    
-    /**
-     * Set a collection of arguments which will be passed to the filter.
-     *
-     * @param array|Traversable $arguments a collection of arguments passed to the filter.
-     */
-    private function setArguments($arguments)
-    {
-        if ($arguments instanceof \Traversable) {
-            $arguments = iterator_to_array($arguments);
-        }
-    
-        if (!is_array($arguments)) {
-            throw new \InvalidArgumentException(sprintf(
-                '%s: expects an array or Traversable object; received "%s"',
-                __METHOD__,
-                (is_object($arguments) ? get_class($arguments) : gettype($arguments))
-            ));
-        }
-
-        $this->arguments = array_filter($arguments, array($this, 'isNode'));
-    }
-    
-    /**
-     * Returns a collection of arguments which will be passed to the filter.
-     *
-     * @return array a collection of arguments to pass to the filter.
-     */
-    private function getArguments()
-    {    
-        return $this->arguments;
     }
 }
