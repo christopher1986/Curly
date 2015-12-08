@@ -188,7 +188,7 @@ class TokenStream implements StreamInterface
                 
         $types = (is_array($types)) ? $types : func_get_args();
 
-        $token = $this->current();       
+        $token = $this->current();      
         foreach ($types as $type) {
             list($type, $value) = array_pad(explode(':', $type), 2, null);
 
