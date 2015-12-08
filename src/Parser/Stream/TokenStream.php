@@ -221,19 +221,16 @@ class TokenStream implements StreamInterface
         $types = (is_array($types)) ? $types : func_get_args();
     
         if (!$this->matches($types)) {
-            $token = $this->current();
             $names = array();
             foreach ($types as $type) {
                 list($type, $value) = array_pad(explode(':', $type), 2, null);
                 $names[] = Token::getLiteral($type);
             }
-            
+             
             $message = sprintf('Expected one of the following ("%s").', implode('", "', $names));
-            if ($this->valid()) {
-                throw new SyntaxException($message, $token->getLineNumber());
-            } else {
-                throw new SyntaxException('Unexpected end of file');
-            }
+            $lineno  = ($this->current()) ? $this->current()->getLineNumber() : -1;
+
+            throw new SyntaxException($message, $lineno);
         }
         
         return $this->consume();
