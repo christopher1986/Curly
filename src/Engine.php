@@ -3,42 +3,15 @@
 namespace Curly;
 
 use Curly\Collection\HashSet;
-use Curly\Lang\Filter\JoinFilter;
-use Curly\Lang\Filter\LowerFilter;
-use Curly\Lang\Filter\UpperFilter;
-use Curly\Lang\Literal\ArrayLiteral;
-use Curly\Lang\Literal\BooleanLiteral;
-use Curly\Lang\Literal\DictionaryLiteral;
-use Curly\Lang\Literal\FloatLiteral;
-use Curly\Lang\Literal\IntegerLiteral;
-use Curly\Lang\Literal\NullLiteral;
-use Curly\Lang\Literal\StringLiteral;
-use Curly\Lang\Operator\Binary\AdditionOperator;
-use Curly\Lang\Operator\Binary\AndOperator;
-use Curly\Lang\Operator\Binary\AssignmentOperator;
-use Curly\Lang\Operator\Binary\DivisionOperator;
-use Curly\Lang\Operator\Binary\EqualOperator;
-use Curly\Lang\Operator\Binary\GreaterEqualOperator;
-use Curly\Lang\Operator\Binary\GreaterOperator;
-use Curly\Lang\Operator\Binary\InOperator;
-use Curly\Lang\Operator\Binary\LessEqualOperator;
-use Curly\Lang\Operator\Binary\LessOperator;
-use Curly\Lang\Operator\Binary\MultiplicationOperator;
-use Curly\Lang\Operator\Binary\NotEqualOperator;
-use Curly\Lang\Operator\Binary\NotInOperator;
-use Curly\Lang\Operator\Binary\OrOperator;
-use Curly\Lang\Operator\Binary\RemainderOperator;
-use Curly\Lang\Operator\Binary\SubtractionOperator;
-use Curly\Lang\Operator\Unary\MinusOperator;
-use Curly\Lang\Operator\Unary\NegationOperator;
-use Curly\Lang\Operator\Unary\PlusOperator;
-use Curly\Lang\Operator\Unary\TypeofOperator;
-use Curly\Lang\Statement\ForStatement;
-use Curly\Lang\Statement\IfStatement;
-use Curly\Lang\Statement\PrintStatement;
-use Curly\Lang\Tag\RangeTag;
 use Curly\Loader\StringLoader;
 use Curly\Parser\Exception\TemplateNotFoundException;
+
+use Curly\Lang\Filter as Filter;
+use Curly\Lang\Literal as Literal;
+use Curly\Lang\Operator\Binary as Binary;
+use Curly\Lang\Operator\Unary as Unary;
+use Curly\Lang\Statement as Statement;
+use Curly\Lang\Tag as Tag;
 
 /**
  *
@@ -253,9 +226,9 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultStatements()
     {
         $statements = array(
-            'for'   => new ForStatement(),
-            'if'    => new IfStatement(),
-            'print' => new PrintStatement(),
+            'for'   => new Statement\ForStatement(),
+            'if'    => new Statement\IfStatement(),
+            'print' => new Statement\PrintStatement(),
         );
         
         $library = $this->getLibrary();
@@ -270,9 +243,9 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultFilters()
     {
         $filters = array(
-            'join'  => new JoinFilter(),
-            'lower' => new LowerFilter(),
-            'upper' => new UpperFilter(),
+            'join'  => new Filter\JoinFilter(),
+            'lower' => new Filter\LowerFilter(),
+            'upper' => new Filter\UpperFilter(),
         );
         
         $library = $this->getLibrary();
@@ -287,7 +260,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultTags()
     {
         $tags = array(
-            'range' => new RangeTag(),
+            'range' => new Tag\RangeTag(),
         );
         
         $library = $this->getLibrary();
@@ -302,13 +275,13 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultLiterals()
     {
         $literals = array(
-            new ArrayLiteral(),
-            new BooleanLiteral(),
-            new DictionaryLiteral(),
-            new FloatLiteral(),
-            new IntegerLiteral(),
-            new NullLiteral(),
-            new StringLiteral(),
+            new Literal\ArrayLiteral(),
+            new Literal\BooleanLiteral(),
+            new Literal\DictionaryLiteral(),
+            new Literal\FloatLiteral(),
+            new Literal\IntegerLiteral(),
+            new Literal\NullLiteral(),
+            new Literal\StringLiteral(),
         );
         
         $library = $this->getLibrary();
@@ -323,26 +296,26 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultOperators()
     {
         $operators = array(
-            new AdditionOperator(),
-            new AndOperator(),
-            new AssignmentOperator(),
-            new DivisionOperator(),
-            new EqualOperator(),
-            new GreaterEqualOperator(),
-            new GreaterOperator(),
-            new InOperator(),
-            new LessEqualOperator(),
-            new LessOperator(),
-            new MultiplicationOperator(),
-            new NotEqualOperator(),
-            new NotInOperator(),
-            new OrOperator(),
-            new RemainderOperator(),
-            new SubtractionOperator(),
-            new MinusOperator(),
-            new NegationOperator(),
-            new PlusOperator(),
-            new TypeofOperator(),
+            new Binary\AdditionOperator(),
+            new Binary\AndOperator(),
+            new Binary\AssignmentOperator(),
+            new Binary\DivisionOperator(),
+            new Binary\EqualOperator(),
+            new Binary\GreaterEqualOperator(),
+            new Binary\GreaterOperator(),
+            new Binary\InOperator(),
+            new Binary\LessEqualOperator(),
+            new Binary\LessOperator(),
+            new Binary\MultiplicationOperator(),
+            new Binary\NotEqualOperator(),
+            new Binary\NotInOperator(),
+            new Binary\OrOperator(),
+            new Binary\RemainderOperator(),
+            new Binary\SubtractionOperator(),
+            new Unary\MinusOperator(),
+            new Unary\NegationOperator(),
+            new Unary\PlusOperator(),
+            new Unary\TypeofOperator(),
         );
         
         $library = $this->getLibrary();
