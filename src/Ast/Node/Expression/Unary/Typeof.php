@@ -2,6 +2,9 @@
 
 namespace Curly\Ast\Node\Expression\Unary;
 
+use ArrayAccess;
+use Traversable;
+
 use Curly\ContextInterface;
 use Curly\Ast\Node\Expression\AbstractUnary;
 use Curly\Ast\Node\Expression\Variable;
@@ -21,15 +24,28 @@ class Typeof extends AbstractUnary
      */
     public function render(ContextInterface $context, OutputStreamInterface $out)
     {
-        $default = 'undefined';
+        $default = 'unknown';
         $nodes = $this->getChildren();
         if ($node = reset($nodes)) {
-            // check if variable exists.
+            // non-existing variable.
             if ($node instanceof Variable && !$context->offsetExists($node->getIdentifier())) {
                 return $default;
             }
             
-            return (($typeof = gettype($node->render($context, $out))) !== 'unknown type') ? $typeof : $default;
+            $type = gettype($node->render($context, $out));
+            if ($type === 'object') {
+                if ($type instanceof ArrayAccess && $type instanceof Traversable) {
+                    $type = 'array';
+                } else if ($type instanceof ArrayAccess) {
+                    $type = 'arrayobject';
+                } else if ($type instanceof Traversable) {
+                    $type = 'traversable';
+                }
+            } else if ($type === 'unknown type') {
+                $type = $default;
+            }
+            
+            return $type;
         }
                 
         return $default;
