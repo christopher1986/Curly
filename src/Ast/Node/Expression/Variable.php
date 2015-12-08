@@ -17,6 +17,20 @@ use Curly\Parser\Exception\ReferenceException;
 class Variable extends Node
 {
     /**
+     * Silently ignore non-existing variable.
+     *
+     * @var int
+     */
+    const E_NONE = 0x00;
+
+    /**
+     * Display errors for non-existing variable.
+     *
+     * @var int
+     */
+    const E_STRICT = 0x01;
+
+    /**
      * The identifier of this node.
      *
      * @var string
@@ -40,16 +54,16 @@ class Variable extends Node
     /**
      * {@inheritDoc}
      *
-     * @throws ReferenceException if the variable does not exist within the specified context.
+     * @throws ReferenceException if E_STRICT is enabled and the variable is non-existing within the specified context.
      */
     public function render(ContextInterface $context, OutputStreamInterface $out)
     {
         $identifier = $this->getIdentifier();
-        if (!$context->offsetExists($identifier)) {
+        if ($this->hasFlags(self::E_STRICT) && !$context->offsetExists($identifier)) {
             throw new ReferenceException(sprintf('name "%s" is not defined', $identifier), $this->getLineNumber());
         }
 
-        return $context[$identifier];
+        return ($context->offsetExists($identifier)) ? $context[$identifier] : null;
     }
 
     /**

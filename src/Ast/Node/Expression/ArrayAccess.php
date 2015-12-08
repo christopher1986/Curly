@@ -10,7 +10,7 @@ use Curly\Parser\Exception\KeyException;
 use Curly\Parser\Exception\TypeException;
 
 /**
- * The ArrayAccess node represents an expression where a value of an array is being accessed. 
+ * The ArrayAccess node represents an expression an array is being accessed. 
  *
  * @author Chris Harris
  * @version 1.0.0
@@ -19,77 +19,112 @@ use Curly\Parser\Exception\TypeException;
 class ArrayAccess extends Node
 {
     /**
-     * A node that represents the array to access.
+     * Silently ignore non-existing offset.
+     *
+     * @var int
+     */
+    const E_NONE = 0x00;
+
+    /**
+     * Display errors for non-existing offset.
+     *
+     * @var int
+     */
+    const E_STRICT = 0x01;
+
+    /**
+     * The array to access.
      *
      * @var NodeInterface
      */
-    private $array = null;
+    private $node = null;
+    
+    /**
+     * The offset whose value to obtain.
+     *
+     * @var NodeInterface
+     */
+    private $offset = null;
 
     /**
-     * Construct a new ArrayAccess.
+     * Construct a new ArrayAccess. 
      *
-     * @param NodeInterface $array the array which will be accessed.
-     * @param array|Traversable $indices a collection of index nodes.
-     * @param array|Traversable $nodes (optional) a collection of nodes.
+     * @param NodeInterface $node the node which when rendered should return a collection type.
+     * @param NodeInterface $offset the offset whose value to return.
      * @param int $lineNumber (optional) the line number.
      * @param int $flags (optional) a bitmask for one or more flags.
      */
-    public function __construct(NodeInterface $array, $children = array(), $lineNumber = -1, $flags = 0x00)
+    public function __construct(NodeInterface $node, $offset, $lineNumber = -1, $flags = 0x00)
     {
-        parent::__construct($children, $lineNumber, $flags);
-        $this->setArray($array);
+        parent::__construct(array(), $lineNumber, $flags);
+        $this->setArray($node);
+        $this->setOffset($offset);
     }
 
     /**
      * {@inheritDoc}
      *
-     * @throws TypeException if the specified node is not an array or a PHP {@link ArrayAccess} object.
-     * @throws TypeException if one or more indices are not scalar values.
-     * @throws KeyException if the specified key or index does not exist.
-     * @link http://php.net/manual/en/class.arrayaccess.php ArrayAccess interface
+     * @throws TypeException if the rendered node is not a collection type.
+     * @throws KeyException if the specified offset is not defined.
      */
     public function render(ContextInterface $context, OutputStreamInterface $out)
-    {    
-        $array = $this->getArray()->render($context, $out);
-        foreach ($this->getChildren() as $node) {
-            $index = $node->render($context, $out);
-            if (!is_scalar($index)) {
-                throw new TypeException(sprintf('%s cannot be interpreted as index', gettype($index)), $node->getLineNumber()); 
-            }
-            
-            // the rendered node is not a collection type.
-            if (!is_array($array) && !$array instanceof \ArrayAccess) {
-                throw new TypeException(sprintf('%s is not an array', gettype($array)), $this->getArray()->getLineNumber()); 
-            }
-            
-            // the specifed index is non-existent.
-            if (is_array($array) && !array_key_exists($index, $array) || is_object($array) && !$array->offsetExists($index)) {
-                throw new KeyException(sprintf('undefined index: %s', $index), $node->getLineNumber());
-            }
-                
-            $array = $array[$index];          
+    {
+        $array  = $this->getArray()->render($context, $out);
+        $offset = $this->getOffset()->render($context, $out);
+        
+        if (is_array($array) && array_key_exists($offset, $array)) {
+            return $array[$offset];
+        } else if ($array instanceof \ArrayAccess && $array->offsetExists($offset)) {
+            return $array[$offset];
         }
         
-        return $array;
+        if ($this->hasFlags(self::E_STRICT) {
+            if (!(is_array($array) || $array instanceof \ArrayAccess)) {
+                throw new TypeException(sprintf('cannot use %s as array', gettype($array)), $this->getArray()->getLineNumber());
+            }
+            throw new KeyException(sprintf('undefined offset %s', $offset), $this->getOffset()->getLineNumber());
+        }
+        
+        return null;
     }
     
     /**
-     * Set the array node which will be accessed.
+     * Set the node that represents the array whose value to access.
      *
-     * @param NodeInterface $node the node that represents an array.
+     * @param NodeInterface $node the node that represents the array whose value to access.
      */
     public function setArray(NodeInterface $node)
     {
-        $this->array = $node;
+        $this->node = $node;
     }
     
     /**
-     * Returns the array node which will be accessed.
+     * Returns the node that represents the array whose value to access.
      *
-     * @return NodeInterface the node that represents the array.
+     * @return NodeInterface the node that represents the array whose value to access.
      */
     private function getArray()
     {
-        return $this->array;
+        return $this->node;
+    }
+    
+    /**
+     * Set the node containing the offset whose value will be returned.
+     *
+     * @param NodeInterface $node the node containing the offset.
+     */
+    public function setOffset(NodeInterface $node)
+    {
+        $this->offset = $node;
+    }
+    
+    /**
+     * Returns the node containing the offset whose value to return.
+     *
+     * @return NodeInterface the node containing the offset.
+     */
+    public function getOffset()
+    {
+        return $this->offset;
     }
 }

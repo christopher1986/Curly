@@ -46,4 +46,44 @@ interface EngineInterface
      * @return TemplateInterface the template for the specified input.
      */
     public function loadTemplate($input);
+    
+    /**
+     * Set a collection of key-value pairs of options.
+     *
+     * @param array $options an associative array of options.
+     */
+    public function setOptions(array $options);
+    
+    /**
+     * Returns a collection containing key-value pairs of options.
+     *
+     * @return array an associative array of options.
+     */
+    public function getOptions();
+    
+    /**
+     * Set an option for the specified name and value.
+     *
+     * @param string $name the name of the option.
+     * @param mixed $value the options value.
+     * @return mixed|null the previous option associated with the specified name, or null if no option exits for the specified name.
+     */
+    public function setOption($name, $value);
+    
+    /**
+     * Returns an option for the specified name.
+     *
+     * @param string $name the name for whose associated option will be returned.
+     * @param mixed $default the default value to return if no option exists for the specified name.
+     * @return mixed the option associated with the specified name, or the default value if no option exists for the specified name.
+     */
+    public function getOption($name, $default = null);
+    
+    /**
+     * Returns true if an option exists for the specified name.
+     *
+     * @param string $name the name whose presence will be tested.
+     * @return bool true if an option exists for the specified name, otherwise false.
+     */
+    public function hasOption($name);
 }

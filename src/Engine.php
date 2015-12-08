@@ -78,10 +78,23 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private $parser = null;
 
     /**
-     * Construct a new Engine.
+     * A collection of engine options.
+     *
+     * @var array
      */
-    public function __construct()
+    private $options = array(
+        'strict_variables' => false
+    );
+
+    /**
+     * Construct a new Engine.
+     *
+     * @param array $options (optional) a collection of engine options.
+     */
+    public function __construct(array $options = array())
     {
+        $this->setOptions($options);
+    
         $this->defaultStatements();
         $this->defaultFilters();
         $this->defaultTags();
@@ -190,6 +203,48 @@ final class Engine implements EngineInterface, LibraryAwareInterface
         }
         
         return new Template($content, $this);
+    }
+    
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function setOptions(array $options)
+    {
+        $this->options = array_merge($this->options, $options);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function setOption($name, $value)
+    {
+        $oldValue = $this->getOption($name);
+        $this->options[$name] = $value;   
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function getOption($name, $default = null)
+    {
+        return ($this->hasOption($name)) ? $this->options[$name] : $default;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function hasOption($name)
+    {
+        return array_key_exists($name, $this->options);
     }
 
     /**

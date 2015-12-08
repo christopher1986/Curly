@@ -8,6 +8,9 @@ use Curly\Ast\Node\PrintStatement;
 use Curly\Ast\Node\TemplateFilter;
 use Curly\Ast\Node\Text;
 use Curly\Ast\Node\Expression\ArrayAccess;
+use Curly\Ast\Node\Expression\MethodInvocation;
+use Curly\Ast\Node\Expression\PropertyAccess;
+use Curly\Ast\Node\Expression\SimpleName;
 use Curly\Ast\Node\Expression\Variable;
 use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\Stream\TokenStream;
@@ -71,6 +74,7 @@ class Parser implements ParserInterface
             // print tags
             if ($token = $stream->consumeIf(Token::T_OPEN_PRINT_TAG)) {
                 $nodes[] = new PrintStatement($this->parseExpression($stream), $token->getLineNumber());
+                $stream->consumeIf(Token::T_SEMICOLON);
                 $stream->expects(Token::T_CLOSE_PRINT_TAG);
             }
             // plain text
@@ -154,32 +158,25 @@ class Parser implements ParserInterface
         } 
         // variables
         else if ($stream->matches(Token::T_VARIABLE)) {
-            $node = new Variable($token->getValue(), $token->getLineNumber());
-            $stream->consume();
-            
-            if ($stream->matches(Token::T_OPEN_BRACKET)) {
-                $node = $this->parseArrayAccessExpression($stream, $node);
-            } else if ($stream->matches(Token::T_PIPELINE)) {
-                $node = $this->parseFilterExpression($stream, $node);
-            }
+            $token = $stream->consume();
+            $flags = ($this->getEngine()->getOption('strict_variables')) ? Variable::E_STRICT : Variable::E_NONE;
+
+            $node  = new Variable($token->getValue(), $token->getLineNumber(), $flags);
+            $node  = $this->parsePostFixExpression($stream, $node);
         }
         // literals
         else if ($this->isLiteral($token)) {
             $literal = $this->getLiteral($token);
-            $node    = $literal->parse($this, $stream);
             
-            if ($stream->matches(Token::T_OPEN_BRACKET)) {
-                $node = $this->parseArrayAccessExpression($stream, $node);
-            } else if ($stream->matches(Token::T_PIPELINE)) {
-                $node = $this->parseFilterExpression($stream, $node);
-            }
+            $node = $literal->parse($this, $stream);
+            $node = $this->parsePostFixExpression($stream, $node);
         }
         
         return $node;
     }
     
     /**
-     * Parse tokens that which may succeed an expression.
+     * Parse tokens that may follow a primary expression.
      *
      * @param TokenStream a stream of tokens to parse.
      * @param NodeInterface the node that proceeds the tokens to parse.
@@ -190,35 +187,66 @@ class Parser implements ParserInterface
      */
     private function parsePostFixExpression($stream, NodeInterface $node)
     {
-        // object access
-        if ($stream->matches(Token::T_PERIOD)) {
-            //$node = $this->parseObjectAccessExpression($stream, $node);
-        } 
-        // array access
-        else if ($stream->matches(Token::T_OPEN_BRACKET)) {
-            $node = $this->parseArrayAccessExpression($stream, $node);
-        } 
-        // filters
-        else if ($stream->matches(Token::T_PIPELINE)) {
-            $node = $this->parseFilterExpression($stream, $node);
+        $finished = false;
+        while (!$finished) {
+            // object access
+            if ($stream->matches(Token::T_PERIOD)) {        
+                $node = $this->parseObjectAccessExpression($stream, $node);
+            } 
+            // array access
+            else if ($stream->matches(Token::T_OPEN_BRACKET)) {
+                $node = $this->parseArrayAccessExpression($stream, $node);
+            } 
+            // filters
+            else if ($stream->matches(Token::T_PIPELINE)) {
+                $node = $this->parseFilterExpression($stream, $node);
+            }
+            // break loop. 
+            else {
+                $finished = true;
+            }
         }
-        
+                
         return $node;
     }
     
+    /**
+     * Parse an object access expression.
+     *
+     * The following examples are all valid object access expressions:
+     *
+     * <code>
+     *     $person = $obj.person;
+     *     $name   = $obj.person.name;
+     *     $person = $obj.getPerson();
+     *     $name   = $obj.getPerson().getName();
+     * </code>
+     *
+     * @param TokenStream a stream of tokens to parse.
+     * @param NodeInterface the array node to access.
+     * @return NodeInterface a node that represents the object access expression.
+     */
     private function parseObjectAccessExpression($stream, NodeInterface $node)
-    {
-        $token = $stream->expects(Token::T_IDENTIFIER);
-        if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS)) {
-            $args = array();
-            do {
-                $args[] = $this->parseExpression($stream);
-            } while ($stream->consumeIf(Token::T_COMMA));
-           
-            $stream->expects(Token::T_CLOSE_PARENTHESIS);             
+    {    
+        while ($stream->consumeIf(Token::T_PERIOD)) {
+            $token = $stream->expects(Token::T_IDENTIFIER);            
+            if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS)) {
+                $args = array();
+                do {
+                    $args[] = $this->parseExpression($stream);
+                } while ($stream->consumeIf(Token::T_COMMA));
+               
+                $stream->expects(Token::T_CLOSE_PARENTHESIS);
+                
+                $flags = ($this->getEngine()->getOption('strict_variables')) ? MethodInvocation::E_STRICT : MethodInvocation::E_NONE;
+                $node  = new MethodInvocation($node, new SimpleName($token->getValue(), $token->getLineNumber()), $args, $node->getLineNumber(), $flags);          
+            } else {
+                $flags = ($this->getEngine()->getOption('strict_variables')) ? PropertyAccess::E_STRICT : PropertyAccess::E_NONE;
+                $node = new PropertyAccess($node, new SimpleName($token->getValue(), $token->getLineNumber()), $node->getLineNumber(), $flags);
+            }
         }
         
-        return new PropertyAccess($node, $args, $token->getLineNumber());
+        return $node;
     }
     
     /**
@@ -230,24 +258,23 @@ class Parser implements ParserInterface
      *     $array = {'first' : 'foo', 'second': 'bar'};
      *     $value = $array['first'];
      *     $value = ['foo', 'bar', 'baz'][2];
-     *     $value = ['foo', ['foobar', 'foobaz'], 'bar'][1][0]
+     *     $value = ['foo', ['foobar', 'foobaz'], 'bar'][1][0];
      * </code>
      *
      * @param TokenStream a stream of tokens to parse.
      * @param NodeInterface the array node to access.
-     * @return ArrayAccess an array access node.
-     * @throws SyntaxException if the current token is not an open bracket.
+     * @return NodeInterface a node that represents the array access expression.
      */
     private function parseArrayAccessExpression($stream, NodeInterface $node)
     {     
-        $token   = $stream->current();   
-        $indices = array();
+        $token = $stream->current();
+        $flags = ($this->getEngine()->getOption('strict_variables')) ? ArrayAccess::E_STRICT : ArrayAccess::E_NONE;
         while ($stream->consumeIf(Token::T_OPEN_BRACKET)) {
-            $indices[] = $this->parseExpression($stream);            
+            $node = new ArrayAccess($node, $this->parseExpression($stream), $token->getLineNumber(), $flags);     
             $stream->expects(Token::T_CLOSE_BRACKET);
         }
         
-        return new ArrayAccess($node, $indices, $token->getLineNumber());
+        return $node;
     }
      
     /**
@@ -272,11 +299,12 @@ class Parser implements ParserInterface
         while ($stream->consumeIf(Token::T_PIPELINE)) {
             $token  = $stream->expects(Token::T_IDENTIFIER);
             $filter = $library->getFilter($token->getValue());
+            
             if (!is_object($filter)) {
                 throw new SyntaxException(sprintf('Unexpected "%s" (%s)', $token->getValue(), Token::getLiteral($token->getType())), $token->getLineNumber());
             }
 
-            $args = array();
+            $args = array($node);
             if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS)) {
                 do {
                     $args[] = $this->parseExpression($stream);
@@ -284,10 +312,10 @@ class Parser implements ParserInterface
                
                 $stream->expects(Token::T_CLOSE_PARENTHESIS);                
             }
-            
-            $node = new TemplateFilter($node, $filter, $args, $token->getLineNumber());
+
+            $node = new TemplateFilter($filter, $args, $token->getLineNumber());
         }
-        
+
         return $node;
     }
     
