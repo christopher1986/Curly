@@ -4,6 +4,7 @@ namespace Curly\Ast\Node\Expression;
 
 use Curly\ContextInterface;
 use Curly\Ast\Node;
+use Curly\Ast\NodeInterface;
 use Curly\Io\Stream\OutputStreamInterface;
 use Curly\Parser\Exception\ReferenceException;
 
@@ -16,20 +17,6 @@ use Curly\Parser\Exception\ReferenceException;
  */
 class Variable extends Node
 {
-    /**
-     * Silently ignore non-existing variable.
-     *
-     * @var int
-     */
-    const E_NONE = 0x00;
-
-    /**
-     * Display errors for non-existing variable.
-     *
-     * @var int
-     */
-    const E_STRICT = 0x01;
-
     /**
      * The identifier of this node.
      *
@@ -59,7 +46,7 @@ class Variable extends Node
     public function render(ContextInterface $context, OutputStreamInterface $out)
     {
         $identifier = $this->getIdentifier();
-        if ($this->hasFlags(self::E_STRICT) && !$context->offsetExists($identifier)) {
+        if ($this->hasFlags(NodeInterface::E_STRICT) && !$context->offsetExists($identifier)) {
             throw new ReferenceException(sprintf('name "%s" is not defined', $identifier), $this->getLineNumber());
         }
 

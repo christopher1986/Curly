@@ -19,20 +19,6 @@ use Curly\Parser\Exception\TypeException;
 class ArrayAccess extends Node
 {
     /**
-     * Silently ignore non-existing offset.
-     *
-     * @var int
-     */
-    const E_NONE = 0x00;
-
-    /**
-     * Display errors for non-existing offset.
-     *
-     * @var int
-     */
-    const E_STRICT = 0x01;
-
-    /**
      * The array to access.
      *
      * @var NodeInterface
@@ -78,7 +64,7 @@ class ArrayAccess extends Node
             return $array[$offset];
         }
         
-        if ($this->hasFlags(self::E_STRICT) {
+        if ($this->hasFlags(NodeInterface::E_STRICT) {
             if (!(is_array($array) || $array instanceof \ArrayAccess)) {
                 throw new TypeException(sprintf('cannot use %s as array', gettype($array)), $this->getArray()->getLineNumber());
             }

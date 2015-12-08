@@ -20,14 +20,14 @@ class NumberLiteral extends Node
      *
      * @var int
      */
-    const TYPE_INTEGER = 0x01;
+    const TYPE_INTEGER = 0x04;
 
     /**
      * A flag for floating point values.
      *
      * @var int
      */
-    const TYPE_FLOAT = 0x02;
+    const TYPE_FLOAT = 0x08;
 
     /**
      * The number value.

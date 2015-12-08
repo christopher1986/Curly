@@ -21,20 +21,6 @@ use Curly\Parser\Exception\TypeException;
 class PropertyAccess extends Node
 {
     /**
-     * Silently ignore non-existing property.
-     *
-     * @var int
-     */
-    const E_NONE = 0x00;
-
-    /**
-     * Display errors for non-existing property.
-     *
-     * @var int
-     */
-    const E_STRICT = 0x01;
-
-    /**
      * The object containing the property.
      *
      * @var NodeInterface
@@ -85,7 +71,7 @@ class PropertyAccess extends Node
             }
         }
         
-        if ($this->hasFlags(self::E_STRICT)) {
+        if ($this->hasFlags(NodeInterface::E_STRICT)) {
             if (!is_object($object)) {
                 throw new TypeException(sprintf('cannot use %s as object', gettype($object)), $this->getObject()->getLineNumber());
             }            

@@ -21,20 +21,6 @@ use Curly\Parser\Exception\TypeException;
 class MethodInvocation extends Node
 {
     /**
-     * Silently ignore non-existing method.
-     *
-     * @var int
-     */
-    const E_NONE = 0x00;
-
-    /**
-     * Display errors for non-existing method.
-     *
-     * @var int
-     */
-    const E_STRICT = 0x01;
-
-    /**
      * The object whose method to invoke.
      *
      * @var NodeInterface
@@ -95,7 +81,7 @@ class MethodInvocation extends Node
             }
         }
         
-        if ($this->hasFlags(self::E_STRICT)) {
+        if ($this->hasFlags(NodeInterface::E_STRICT)) {
             if (!is_object($object)) {
                 throw new TypeException(sprintf('cannot use %s as object', gettype($object)), $this->getObject()->getLineNumber());
             }

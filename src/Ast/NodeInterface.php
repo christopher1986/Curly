@@ -13,7 +13,21 @@ use Curly\Io\Stream\OutputStreamInterface;
  * @since 1.0.0
  */
 interface NodeInterface
-{    
+{
+    /**
+     * Silently ignore non-existing property.
+     *
+     * @var int
+     */
+    const E_NONE = 0x01;
+
+    /**
+     * Display errors for non-existing property.
+     *
+     * @var int
+     */
+    const E_STRICT = 0x02;
+  
     /**
      * Returns if set the flags for this node.
      *

@@ -159,7 +159,7 @@ class Parser implements ParserInterface
         // variables
         else if ($stream->matches(Token::T_VARIABLE)) {
             $token = $stream->consume();
-            $flags = ($this->getEngine()->getOption('strict_variables')) ? Variable::E_STRICT : Variable::E_NONE;
+            $flags = ($this->getEngine()->getOption('strict_variables')) ? NodeInterface::E_STRICT : NodeInterface::E_NONE;
 
             $node  = new Variable($token->getValue(), $token->getLineNumber(), $flags);
             $node  = $this->parsePostFixExpression($stream, $node);
@@ -229,7 +229,8 @@ class Parser implements ParserInterface
     private function parseObjectAccessExpression($stream, NodeInterface $node)
     {    
         while ($stream->consumeIf(Token::T_PERIOD)) {
-            $token = $stream->expects(Token::T_IDENTIFIER);            
+            $token = $stream->expects(Token::T_IDENTIFIER); 
+            $flags = ($this->getEngine()->getOption('strict_variables')) ? NodeInterface::E_STRICT : NodeInterface::E_NONE;           
             if ($stream->consumeIf(Token::T_OPEN_PARENTHESIS)) {
                 $args = array();
                 do {
@@ -238,10 +239,8 @@ class Parser implements ParserInterface
                
                 $stream->expects(Token::T_CLOSE_PARENTHESIS);
                 
-                $flags = ($this->getEngine()->getOption('strict_variables')) ? MethodInvocation::E_STRICT : MethodInvocation::E_NONE;
-                $node  = new MethodInvocation($node, new SimpleName($token->getValue(), $token->getLineNumber()), $args, $node->getLineNumber(), $flags);          
+                $node = new MethodInvocation($node, new SimpleName($token->getValue(), $token->getLineNumber()), $args, $node->getLineNumber(), $flags);          
             } else {
-                $flags = ($this->getEngine()->getOption('strict_variables')) ? PropertyAccess::E_STRICT : PropertyAccess::E_NONE;
                 $node = new PropertyAccess($node, new SimpleName($token->getValue(), $token->getLineNumber()), $node->getLineNumber(), $flags);
             }
         }
@@ -268,7 +267,7 @@ class Parser implements ParserInterface
     private function parseArrayAccessExpression($stream, NodeInterface $node)
     {     
         $token = $stream->current();
-        $flags = ($this->getEngine()->getOption('strict_variables')) ? ArrayAccess::E_STRICT : ArrayAccess::E_NONE;
+        $flags = ($this->getEngine()->getOption('strict_variables')) ? NodeInterface::E_STRICT : NodeInterface::E_NONE;
         while ($stream->consumeIf(Token::T_OPEN_BRACKET)) {
             $node = new ArrayAccess($node, $this->parseExpression($stream), $token->getLineNumber(), $flags);     
             $stream->expects(Token::T_CLOSE_BRACKET);

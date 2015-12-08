@@ -22,14 +22,14 @@ class ArrayLiteral extends Node
      *
      * @var int
      */
-    const TYPE_NUMERIC = 0x01;
+    const TYPE_NUMERIC = 0x04;
 
     /**
      * A flag for associative arrays.
      *
      * @var int
      */
-    const TYPE_ASSOCIATIVE = 0x02;
+    const TYPE_ASSOCIATIVE = 0x08;
 
     /**
      * {@inheritDoc}
