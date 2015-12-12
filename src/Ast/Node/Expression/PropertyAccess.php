@@ -2,7 +2,9 @@
 
 namespace Curly\Ast\Node\Expression;
 
+use ErrorException;
 use ReflectionClass;
+use ReflectionException;
 
 use Curly\ContextInterface;
 use Curly\Ast\Node;
@@ -20,6 +22,13 @@ use Curly\Parser\Exception\TypeException;
  */
 class PropertyAccess extends Node
 {
+    /**
+     * A cache of instantiated reflection classes.
+     *
+     * @var array
+     */
+    private static $reflectionCache = array();
+
     /**
      * The object containing the property.
      *
@@ -62,12 +71,10 @@ class PropertyAccess extends Node
         $name   = $this->getName()->render($context, $out);
         
         if (is_object($object)) {
-            $reflClass = new ReflectionClass($object);
-            if ($reflClass->hasProperty($name)) {
-                $reflProp = $reflClass->getProperty($name);
-                if ($reflProp->isPublic()) {
-                    return $reflProp->getValue($object);
-                }
+            $found = false;
+            $value = $this->readProperty($object, $name, $found);
+            if ($found) {
+                return $value;
             }
         }
         
@@ -119,5 +126,60 @@ class PropertyAccess extends Node
     private function getName()
     {
         return $this->name;
+    }
+    
+    /**
+     * Returns the value for the specified property name and object.
+     *
+     * @param object $object the object whose properties will be read.
+     * @param string $name the name of the property whose value to return.
+     * @param bool $found (optional) a flag that will be set to true if the property was found.
+     * @return mixed|null the property value, or null.
+     */
+    private function readProperty($object, $name, &$found = false)
+    {
+        // stop early.
+        if (!is_object($object)) {
+            return null;   
+        }
+        
+        // cache for performance.
+        $class = get_class($object);
+        if (!array_key_exists($class, self::$reflectionCache)) {
+            self::$reflectionCache[$class] = new ReflectionClass($object);
+        }
+        
+        $reflClass = self::$reflectionCache[$class];
+        if ($reflClass->hasProperty($name)) {
+            $reflProp = $reflClass->getProperty($name);
+            if ($found = $reflProp->isPublic()) {
+                return $reflProp->getValue($object);
+            }
+        }
+        
+        // camelcase method name.
+        $name = ucfirst($name);
+        if (strpos($name, '_') !== false) {
+            $name = join('', array_map('ucfirst', explode('_', $name)));
+        }
+        
+        $types = array('get', 'is', 'has');
+        foreach ($types as $type) {
+            $method = sprintf('%s%s', $type, $name);
+            if ($reflClass->hasMethod($method)) {            
+                $reflMethod = $reflClass->getMethod($method);
+                if ($found = ($reflMethod->isPublic() && $reflMethod->getNumberOfRequiredParameters() === 0)) {
+                    try {
+                        return $reflMethod->invoke($object);
+                    } catch (ReflectionException $e) {
+                        $found = false;
+                    } catch (ErrorException $e) {
+                        $found = false;
+                    }
+                }
+            }
+        }
+        
+        return null;
     }
 }
