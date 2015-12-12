@@ -53,10 +53,7 @@ class Node implements NodeInterface
     }
     
     /**
-     * Set the specified flags for this node.
-     *
-     * @param int $flags (optional) a bitmask for one or more flags.
-     * @throws InvalidArgumentException if the given argument is not an integer value.
+     * {@inheritDoc}
      */
     public function setFlags($flags = 0x00)
     {
