@@ -2,7 +2,9 @@
 
 namespace Curly\Ast\Node\Expression;
 
+use ErrorException;
 use ReflectionClass;
+use ReflectionException;
 
 use Curly\ContextInterface;
 use Curly\Ast\Node;
@@ -20,6 +22,13 @@ use Curly\Parser\Exception\TypeException;
  */
 class MethodInvocation extends Node
 {
+    /**
+     * A cache of instantiated reflection classes.
+     *
+     * @var array
+     */
+    private static $reflectionCache = array();
+    
     /**
      * The object whose method to invoke.
      *
@@ -63,21 +72,15 @@ class MethodInvocation extends Node
         $name   = $this->getName()->render($context, $out);
         
         if (is_object($object)) {
-            $reflClass = new ReflectionClass($object);
-            if ($reflClass->hasMethod($name)) {
-                $reflMethod = $reflClass->getMethod($name);
-                if ($reflMethod->isPublic() && ($reflMethod->isVariadic() || $reflMethod->getNumberOfRequiredParameters() === count($this->getChildren()))) {
-                    $args = array();
-                    foreach ($this->getChildren() as $node) {
-                        $args[] = $node->render($context, $out);
-                    }
-                
-                    try {
-                        return $reflMethod->invokeArgs($object, $args);
-                    } catch (\ReflectionException $e) {
-                        // fail silently.
-                    }
-                }
+            $args = array();
+            foreach ($this->getChildren() as $node) {
+                $args[] = $node->render($context, $out);
+            }
+        
+            $found = false;
+            $value = $this->invokeMethod($object, $name, $args, $found);
+            if ($found) {
+                return $value;
             }
         }
         
@@ -129,5 +132,44 @@ class MethodInvocation extends Node
     private function getName()
     {
         return $this->name;
+    }
+    
+    /**
+     * Returns the value for the specified property name and object.
+     *
+     * @param object $object the object whose method will be called.
+     * @param string $name the name of the method to invoke.
+     * @param array $args (optional) a collection of arguments with which to invoke the method.
+     * @param bool $found (optional) a flag that will be set to true if the method was found.
+     * @return mixed|null the return value of the invoked method, or null.
+     */
+    private function invokeMethod($object, $name, array $args = null, &$found = false)
+    {
+        // stop early.
+        if (!is_object($object)) {
+            return null;   
+        }
+        
+        // cache for performance.
+        $class = get_class($object);
+        if (!array_key_exists($class, self::$reflectionCache)) {
+            self::$reflectionCache[$class] = new ReflectionClass($object);
+        }
+        
+        $reflClass = self::$reflectionCache[$class];
+        if ($reflClass->hasMethod($name)) {   
+            $reflMethod = $reflClass->getMethod($name);
+            if ($found = $reflMethod->isPublic()) {
+                try {
+                    return (is_array($args)) ? $reflMethod->invokeArgs($object, $args) : $reflMethod->invoke($object);
+                } catch (ReflectionException $e) {
+                    $found = false;
+                } catch (ErrorException $e) {
+                    $found = false;
+                }   
+            }
+        }
+        
+        return null;
     }
 }
