@@ -145,7 +145,7 @@ class PropertyAccess extends Node
         
         // cache for performance.
         $class = get_class($object);
-        if (!array_key_exists($class, self::$reflectionCache)) {
+        if (!isset(self::$reflectionCache[$class])) {
             self::$reflectionCache[$class] = new ReflectionClass($object);
         }
         
