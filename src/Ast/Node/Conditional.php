@@ -75,7 +75,11 @@ class Conditional extends Node
      * @param NodeInterface $node (optional) the expression to evaluate, or null which evaluates to true.
      */
     public function setCondition(NodeInterface $node = null)
-    {
+    {    
+        if ($node !== null) { 
+            $this->disableStrictErrors($node);
+        }
+        
         $this->condition = $node;
     }
     
@@ -87,5 +91,20 @@ class Conditional extends Node
     private function getCondition()
     {
         return $this->condition;
+    }
+    
+    /**
+     * Disable all strict errors for the specified node and all of it's children.
+     *
+     * @param NodeInterface $node the node whose strict error will be disabled.
+     */
+    private function disableStrictErrors(NodeInterface $node)
+    {
+        $node->removeFlags(NodeInterface::E_STRICT);
+        $node->addFlags(NodeInterface::E_NONE);
+        
+        foreach ($node->getChildren() as $child) {
+            $this->disableStrictErrors($child);
+        }
     }
 }
