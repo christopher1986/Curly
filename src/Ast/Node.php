@@ -71,6 +71,22 @@ class Node implements NodeInterface
     /**
      * {@inheritDoc}
      */
+    public function addFlags($flags)
+    {
+        if (!is_int($flags)) {
+            throw new \InvalidArgumentException(sprintf(
+                '%s: expects a numeric argument; received "%s" instead',
+                __METHOD__,
+                (is_object($flags) ? get_class($flags) : gettype($flags))
+            ));
+        }
+        
+        $this->flags |= $flags;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
     public function hasFlags($flags)
     {
         return (($this->flags & $flags) === $flags);
@@ -82,6 +98,22 @@ class Node implements NodeInterface
     public function getFlags()
     {
         return $this->flags;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function removeFlags($flags)
+    {
+        $this->flags &= ~$flags;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function clearFlags()
+    {
+        $this->flags = 0x00;
     }
     
     /**
