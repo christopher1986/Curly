@@ -37,6 +37,14 @@ interface NodeInterface
     public function setFlags($flags = 0x00);
   
     /**
+     * Add the specified flags for this node.
+     *
+     * @param int $flags a bitmask for one or more flags.
+     * @throws InvalidArgumentException if the given argument is not an integer value.
+     */
+    public function addFlags($flags);
+  
+    /**
      * Returns if set the flags for this node.
      *
      * A flag is either a bitmask, or named constant. A bitwise operator can be used
@@ -53,6 +61,18 @@ interface NodeInterface
      * @return bool true if the specified flags are set for this node, false otherwise.
      */
     public function hasFlags($flags);
+    
+    /**
+     * Removes if present the specified flag.
+     *
+     * @param int $flags a bitmask for one or more flags.
+     */
+    public function removeFlags($flags);
+
+    /**
+     * Clear all flags for this node.
+     */
+    public function clearFlags();
     
     /**
      * Returns if present the line number, or -1 if no line number was provided.
