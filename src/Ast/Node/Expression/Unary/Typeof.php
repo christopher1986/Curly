@@ -24,7 +24,7 @@ class Typeof extends AbstractUnary
      */
     public function render(ContextInterface $context, OutputStreamInterface $out)
     {
-        $default = 'unknown';
+        $default = 'none';
         $nodes = $this->getChildren();
         if ($node = reset($nodes)) {
             // non-existing variable.
