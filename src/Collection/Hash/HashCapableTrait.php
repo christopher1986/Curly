@@ -4,6 +4,13 @@ namespace Curly\Collection\Hash;
 
 use ReflectionClass;
 
+/**
+ * The HashCapableTrait provides a basic implementation of the {@link HashCapableInterface}.
+ *
+ * @author Chris Harris <c.harris@hotmail.com>
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 trait HashCapableTrait
 {
     /**
