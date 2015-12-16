@@ -2,6 +2,8 @@
 
 namespace Curly;
 
+use SplStack;
+
 use Curly\Common\Comparator\LengthComparator;
 use Curly\Io\StringReader;
 use Curly\Parser\Exception\SyntaxException;
@@ -17,13 +19,14 @@ use Curly\Util\Arrays;
  * @version 1.0.0
  * @since 1.0.0
  */
-class Lexer implements LexerInterface
+class Lexer extends AbstractLexer
 {
     /**
      * Lexer states
      */
-    const STATE_TEXT = 1;
-    const STATE_LANG = 2;
+    const C_PLAIN_TEXT = 0x00;
+    const C_LANGUAGE   = 0x01;
+    const C_BRACKET    = 0x02; 
 
     /**
      * A collection of code tags to match.
@@ -56,6 +59,13 @@ class Lexer implements LexerInterface
         ':' => Token::T_COLON,
         '=' => Token::T_ASSIGN,
     );
+    
+    /**
+     * Store brackets on a stack.
+     *
+     * @var int
+     */
+    private $bracketStack = null;
 
     /**
      * A collection of tokens found by the lexer.
@@ -86,13 +96,6 @@ class Lexer implements LexerInterface
     private $tagPositions = array();
 
     /**
-     * The state the lexer is curently in. 
-     *
-     * @var int
-     */
-    private $state = self::STATE_TEXT;
-
-    /**
      * A collection of patterns to match.
      *
      * @var array
@@ -113,6 +116,7 @@ class Lexer implements LexerInterface
     public function __construct(EngineInterface $engine)
     {
         $this->setEngine($engine);
+        $this->bracketStack = new SplStack();
     }
 
     /**
@@ -124,14 +128,10 @@ class Lexer implements LexerInterface
         $this->setInput($input);       
     
         while ($this->reader->hasNextChar()) {
-            switch($this->state) {
-                case self::STATE_LANG:
-                    $this->tokenizeLang();
-                    break;
-                case self::STATE_TEXT:
-                default:
-                    $this->tokenizeText();
-                    break;
+            if ($this->hasContext(self::C_LANGUAGE)) {
+                $this->tokenizeLanguage();
+            } else {
+                $this->tokenizePlainText();  
             }
         }
                     
@@ -146,7 +146,7 @@ class Lexer implements LexerInterface
      *
      * text ::= {"0x20".."0x7e"}
      */
-    private function tokenizeText()
+    private function tokenizePlainText()
     {            
         $reader = $this->reader;
         if (($tagPos = array_shift($this->tagPositions)) !== null) {
@@ -163,7 +163,7 @@ class Lexer implements LexerInterface
                     $this->pushToken(Token::T_OPEN_PRINT_TAG, $tag, $reader->getLineNumber());
                     break;
             }
-            $this->state = self::STATE_LANG;
+            $this->setContext(self::C_LANGUAGE);
 
         } else if ($reader->hasNextChar()) {
             $this->pushToken(Token::T_TEXT, trim($reader->readToEnd(), "\n\r\0\x0B"), $reader->getLineNumber());
@@ -187,7 +187,7 @@ class Lexer implements LexerInterface
      * symbols     ::= "+" | "-" | "*" | "/" | "%" | ">" | "<" | ">=" | "<=" | "==" | "!=" | "or" | "and" | "not"
      * punctuation ::= "[" | "]" | "(" | ")" | "{" | "}" | "." | "," | "|" | ";" | ":" | "="
      */
-    private function tokenizeLang()
+    private function tokenizeLanguage()
     {    
         // ignore whitespace.
         if ($this->reader->matches('/\s+/A', $matches)) {
@@ -197,7 +197,7 @@ class Lexer implements LexerInterface
         $reader  = $this->reader;
         $matches = array();
         // code tags
-        if ($reader->matches($this->getTagRegex(), $matches)) {
+        if ($reader->matches($this->getTagRegex(), $matches) && !$this->hasContext(self::C_BRACKET)) {
             switch ($matches[1]) {
                 case $this->tags['close_tag']:
                     $this->pushToken(Token::T_CLOSE_TAG, $matches[1], $reader->getLineNumber());
@@ -210,7 +210,7 @@ class Lexer implements LexerInterface
                     break;
             }
 
-            $this->state = self::STATE_TEXT;
+            $this->setContext(self::C_PLAIN_TEXT);
         }
         // operator symbols
         else if ($reader->matches($this->getOperatorRegex(), $matches)) {
@@ -248,6 +248,25 @@ class Lexer implements LexerInterface
         else if ($reader->matches($this->getPunctutationRegex(), $matches)) {
             $value = $matches[1];
             $type  = (isset($this->punctuations[$value])) ? $this->punctuations[$value] : Token::T_UNKNOWN;
+            
+            // handle bracket pairs.
+            if (strpos('{[(', $value) !== false) {
+                $this->addContext(self::C_BRACKET);
+                $this->bracketStack->push($value);
+            } else if (strpos('}])', $value) !== false) {
+                if ($this->bracketStack->isEmpty()) {
+                    throw new SyntaxException(sprintf('Unexpected character "%s" was found', $value), $reader->getLineNumber());
+                }
+                
+                $bracket = $this->bracketStack->pop();
+                if ($value !== strtr($bracket, '([{', ')]}')) {
+                    throw new SyntaxException(sprintf('Unclosed character "%s" was found', $bracket));
+                }
+                
+                if ($this->bracketStack->isEmpty()) {
+                    $this->removeContext(self::C_BRACKET);
+                }
+            }
                 
             $this->pushToken($type, $value, $reader->getLineNumber());
         }
@@ -359,8 +378,10 @@ class Lexer implements LexerInterface
      */
     private function reset()
     {
+        $this->bracketStack = new SplStack();
         $this->tagPositions = array();
         $this->tokens       = array();
+        $this->resetContext();
     }
     
     /**
