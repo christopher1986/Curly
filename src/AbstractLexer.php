@@ -14,19 +14,19 @@ namespace Curly;
 abstract class AbstractLexer implements LexerInterface
 {
     /**
-     * the context is the current position of the scanner within a sequence of characters. 
+     * the context is the current position of the lexer within a sequence of characters. 
      *
      * @var int
      */ 
     protected $context = 0x00;
     
     /**
-     * Add the given context to scanner.
+     * Add the specified context to lexer.
      *
-     * The scanner will be in the given context after this operation returns.
-     * This can be tested for using the {@link AbstractScanner::hasContext($context)} method.
+     * The lexer will be in the specified context after this operation returns.
+     * This can be tested for using the {@link AbstractLexer::hasContext($context)} method.
      *
-     * @parem int context the context the place the scanner in.
+     * @parem int context the context the place the lexer in.
      */
     public function addContext($context)
     {
@@ -34,7 +34,7 @@ abstract class AbstractLexer implements LexerInterface
     }
     
     /**
-     * Replaces the current context of the scanner.
+     * Replaces the current context of the lexer.
      * 
      * If the context is omitted the context of the will be reset to it's initial value.
      *
@@ -46,10 +46,10 @@ abstract class AbstractLexer implements LexerInterface
     }
     
     /**
-     * Determine whether the scanner is currently in the given context.
+     * Determine whether the lexer is has the specified context.
      *
      * @param int context the context whose presence will be tested.
-     * @return bool true if the scanner is currenty positioned in the given context, false otherwise.
+     * @return bool true if the lexer has the specified context, false otherwise.
      */
     public function hasContext($context)
     {
@@ -57,12 +57,12 @@ abstract class AbstractLexer implements LexerInterface
     }
     
     /**
-     * Removes if present the given context.
+     * Removes if present the specified context.
      *
-     * The scanner will no longer be in the given context after this operation returns.
-     * This can be tested using the {@link AbstractScanner::hasContext($context)} method.
+     * The lexer will no longer be in the specified context after this operation returns.
+     * This can be tested using the {@link AbstractLexer::hasContext($context)} method.
      *
-     * @param int the context which the scanner will no longer be in.
+     * @param int the context which the lexer will no longer be in.
      */
     public function removeContext($context)
     {
@@ -78,7 +78,7 @@ abstract class AbstractLexer implements LexerInterface
     }
     
     /**
-     * Returns true if the scanner has no context.
+     * Returns true if the lexer has no context.
      *
      * @return bool true if no context is set, false otherwise.
      */
