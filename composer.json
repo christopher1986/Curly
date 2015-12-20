@@ -1,5 +1,5 @@
 {
-    "name": "christopher/curly",
+    "name": "webwijs/curly",
     "description": "A lightweight template language for PHP",
     "type": "library",
     "license": "BSD-3-Clause",
