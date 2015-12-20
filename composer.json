@@ -17,7 +17,7 @@
             "Curly\\": "src/"
         }
     },
-    "dist": {
+    "source": {
         "url": "git@bitbucket.org:christopher1986/curly.git",
         "type": "git"
     }
