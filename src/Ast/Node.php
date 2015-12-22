@@ -191,6 +191,9 @@ class Node implements NodeInterface
     public function accept(VisitorInterface $visitor)
     {
         $visitor->visit($this);
+        foreach ($this->getChildren() as $node) {
+            $visitor->visit($node);
+        }
     }
     
     /**
