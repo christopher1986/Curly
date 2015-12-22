@@ -67,7 +67,7 @@ class Text extends Node
      *
      * @return string a sequence of characters.
      */
-    private function getText()
+    public function getText()
     {
         return $this->text;
     }
