@@ -4,6 +4,7 @@ namespace Curly\Ast;
 
 use Curly\ContextInterface;
 use Curly\Io\Stream\OutputStreamInterface;
+use Curly\Parser\Visitor\VisitorInterface;
 
 /**
  * 
@@ -87,6 +88,13 @@ interface NodeInterface
      * @return Traversable a collection of nodes.
      */
     public function getChildren();
+    
+    /**
+     * Allow a visitor to vitor this node.
+     *
+     * @param VisitorInterface $visitor the visitor.
+     */
+    public function accept(VisitorInterface $visitor);
     
     /**
      * Render this node with the specified context.

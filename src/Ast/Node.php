@@ -4,6 +4,7 @@ namespace Curly\Ast;
 
 use Curly\ContextInterface;
 use Curly\Io\Stream\OutputStreamInterface;
+use Curly\Parser\Visitor\VisitorInterface;
 
 /**
  * 
@@ -182,6 +183,14 @@ class Node implements NodeInterface
         }
     
         return $this->children;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    public function accept(VisitorInterface $visitor)
+    {
+        $visitor->visit($this);
     }
     
     /**
