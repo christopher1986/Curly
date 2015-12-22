@@ -192,7 +192,7 @@ class Node implements NodeInterface
     {
         $visitor->visit($this);
         foreach ($this->getChildren() as $node) {
-            $visitor->visit($node);
+            $node->accept($visitor);
         }
     }
     
