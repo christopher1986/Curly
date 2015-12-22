@@ -13,7 +13,7 @@ use Curly\Ast\NodeInterface;
  */
 interface VisitorInterface
 {
-     /** 
+    /** 
      * Visit the specified node.
      *
      * @param NodeInterface $node the node that is being visited.
