@@ -64,7 +64,7 @@ class ArrayAccess extends Node
             return $array[$offset];
         }
         
-        if ($this->hasFlags(NodeInterface::E_STRICT) {
+        if ($this->hasFlags(NodeInterface::E_STRICT)) {
             if (!(is_array($array) || $array instanceof \ArrayAccess)) {
                 throw new TypeException(sprintf('cannot use %s as array', gettype($array)), $this->getArray()->getLineNumber());
             }
