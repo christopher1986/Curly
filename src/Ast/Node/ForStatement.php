@@ -62,30 +62,30 @@ class ForStatement extends Node
         $context->push(new TemplateContext());
         
         $varNames = $this->getVariableNames($context, $out);
-        $hasKey   = (count($varNames) == 2);
-        
-        $sequence = $this->getSequence()->render($context, $out);
-        if (!is_array($sequence) && !$sequence instanceof Traversable) {
-            throw new TypeException(sprintf('%s is not iterable', gettype($sequence)), $this->getSequence()->getLineNumber()); 
+        $hasKey   = (count($varNames) === 2);
+        $loopVars = (object) array('counter0' => 0, 'counter' => 1);
+
+        $elements = $this->getSequence()->render($context, $out);
+        if (!is_array($elements) && !$elements instanceof Traversable) {
+            throw new TypeException(sprintf('%s is not iterable', gettype($elements)), $this->getSequence()->getLineNumber()); 
         }
-    
+
         $rendered = array();
-        $counter  = 0;
-        foreach ($sequence as $key => $value) {
-            // assign key and value to template context.
+        foreach ($elements as $key => $element) {
             if ($hasKey) {
                 $context[$varNames[0]] = $key;
-                $context[$varNames[1]] = $value;
+                $context[$varNames[1]] = $element;
             } else {
-                $context[$varNames[0]] = $value;
+                $context[$varNames[0]] = $element;
             }
             
-            $context['counter0'] = $counter;
-            $context['counter']  = ++$counter;
-            
+            $context['forloop'] = $loopVars;         
             foreach ($this->getChildren() as $node) {
                 $rendered[] = $node->render($context, $out);
             }
+            
+            $loopVars->counter0 = $loopVars->counter;
+            $loopVars->counter  = $loopVars->counter + 1;
         }
 
         $context->pop();
