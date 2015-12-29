@@ -2,6 +2,13 @@
 
 namespace Curly\Lang\Filter;
 
+/**
+ * The LowerFilter will lowercase all alphabetic characters.
+ *
+ * @author Chris Harris <c.harris@hotmail.com>
+ * @version 1.0.0
+ * @since 1.0.0
+ */
 class LowerFilter
 {    
     /**

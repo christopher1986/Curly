@@ -243,9 +243,10 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultFilters()
     {
         $filters = array(
-            'join'  => new Filter\JoinFilter(),
-            'lower' => new Filter\LowerFilter(),
-            'upper' => new Filter\UpperFilter(),
+            'join'          => new Filter\JoinFilter(),
+            'number_format' => new Filter\NumberFormatFilter(),
+            'lower'         => new Filter\LowerFilter(),
+            'upper'         => new Filter\UpperFilter(),
         );
         
         $library = $this->getLibrary();
