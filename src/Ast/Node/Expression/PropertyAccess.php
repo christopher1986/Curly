@@ -5,6 +5,7 @@ namespace Curly\Ast\Node\Expression;
 use ErrorException;
 use ReflectionClass;
 use ReflectionException;
+use stdClass;
 
 use Curly\ContextInterface;
 use Curly\Ast\Node;
@@ -69,7 +70,7 @@ class PropertyAccess extends Node
     {
         $object = $this->getObject()->render($context, $out);
         $name   = $this->getName()->render($context, $out);
-        
+
         if (is_object($object)) {
             $found = false;
             $value = $this->readProperty($object, $name, $found);
@@ -143,7 +144,12 @@ class PropertyAccess extends Node
             return null;   
         }
         
-        // cache for performance.
+        // read dynamic objects.
+        if ($object instanceof stdClass) {
+            return ($found = property_exists($object, $name)) ? $object->{$name} : null;
+        }
+        
+        // add object to cache.
         $class = get_class($object);
         if (!isset(self::$reflectionCache[$class])) {
             self::$reflectionCache[$class] = new ReflectionClass($object);
