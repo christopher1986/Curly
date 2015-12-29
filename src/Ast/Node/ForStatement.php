@@ -63,13 +63,14 @@ class ForStatement extends Node
         
         $varNames = $this->getVariableNames($context, $out);
         $hasKey   = (count($varNames) == 2);
-        $rendered = array();
         
         $sequence = $this->getSequence()->render($context, $out);
         if (!is_array($sequence) && !$sequence instanceof Traversable) {
             throw new TypeException(sprintf('%s is not iterable', gettype($sequence)), $this->getSequence()->getLineNumber()); 
         }
     
+        $rendered = array();
+        $counter  = 0;
         foreach ($sequence as $key => $value) {
             // assign key and value to template context.
             if ($hasKey) {
@@ -78,6 +79,9 @@ class ForStatement extends Node
             } else {
                 $context[$varNames[0]] = $value;
             }
+            
+            $context['counter0'] = $counter;
+            $context['counter']  = ++$counter;
             
             foreach ($this->getChildren() as $node) {
                 $rendered[] = $node->render($context, $out);
