@@ -3,7 +3,7 @@
 namespace Curly;
 
 /**
- * The AbstractLexer provides methods for a lexer which can be in or more contexts during the lexical analysis.
+ * The AbstractLexer provides methods for a lexer that can be in or more contexts during the lexical analysis.
  * Whether a lexer can be in or more contexts simultaneously is something that has to be determined by the 
  * implementing class.
  *
