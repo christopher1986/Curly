@@ -244,9 +244,11 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     {
         $filters = array(
             'join'          => new Filter\JoinFilter(),
-            'number_format' => new Filter\NumberFormatFilter(),
             'lower'         => new Filter\LowerFilter(),
             'upper'         => new Filter\UpperFilter(),
+            'capitalize'    => new Filter\CapitalizeFilter(),
+            'uncapitalize'  => new Filter\UncapitalizeFilter(),
+            'number_format' => new Filter\NumberFormatFilter(),
         );
         
         $library = $this->getLibrary();
