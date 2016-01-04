@@ -3,6 +3,7 @@
 namespace Curly\Common\Comparator;
 
 use Curly\Common\ComparatorInterface;
+use Curly\Common\ComparableInterface;
 
 /**
  * A comparison function which allows the ordering on a collection of Comparable objects.
