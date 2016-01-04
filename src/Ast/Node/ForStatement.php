@@ -61,31 +61,39 @@ class ForStatement extends Node
     {
         $context->push(new TemplateContext());
         
-        $varNames = $this->getVariableNames($context, $out);
+        $varNames = $this->getVariableNames($context, $out);        
         $hasKey   = (count($varNames) === 2);
-        $loopVars = (object) array('counter0' => 0, 'counter' => 1);
 
         $elements = $this->getSequence()->render($context, $out);
         if (!is_array($elements) && !$elements instanceof Traversable) {
             throw new TypeException(sprintf('%s is not iterable', gettype($elements)), $this->getSequence()->getLineNumber()); 
         }
-
+        
         $rendered = array();
+        $loopVars = (object) array(
+            'counter0' => 0, 
+            'counter'  => 1,
+            'size'     => count($elements),
+            'last'     => false
+        );
+        
         foreach ($elements as $key => $element) {
             if ($hasKey) {
                 $context[$varNames[0]] = $key;
                 $context[$varNames[1]] = $element;
+                $context['forloop']    = $loopVars;
             } else {
                 $context[$varNames[0]] = $element;
+                $context['forloop']    = $loopVars;
             }
-            
-            $context['forloop'] = $loopVars;         
+
             foreach ($this->getChildren() as $node) {
                 $rendered[] = $node->render($context, $out);
             }
             
             $loopVars->counter0 = $loopVars->counter;
             $loopVars->counter  = $loopVars->counter + 1;
+            $loopVars->last     = ($loopVars->size === $loopVars->counter);
         }
 
         $context->pop();
