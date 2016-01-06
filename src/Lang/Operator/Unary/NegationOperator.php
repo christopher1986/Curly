@@ -20,7 +20,7 @@ class NegationOperator extends AbstractUnaryOperator
      */   
     public function getSymbol()
     {
-        return 'not';
+        return '!';
     }
     
     /**
