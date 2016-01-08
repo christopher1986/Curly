@@ -11,6 +11,7 @@ use Curly\Ast\Node;
 use Curly\Ast\NodeInterface;
 use Curly\Ast\Node\Expression\Variable;
 use Curly\Parser\Exception\SyntaxException;
+use Curly\Parser\Exception\TypeException;
 use Curly\Io\Stream\OutputStreamInterface;
 
 /**
@@ -69,14 +70,13 @@ class ForStatement extends Node
             throw new TypeException(sprintf('%s is not iterable', gettype($elements)), $this->getSequence()->getLineNumber()); 
         }
         
-        $rendered = array();
-        $loopVars = (object) array(
-            'counter0' => 0, 
-            'counter'  => 1,
-            'size'     => count($elements),
-            'last'     => false
-        );
+        // create loop variables.
+        $loopVars = (object) array('counter0' => 0, 'counter' => 1, 'last' => false, 'size' => count($elements));        
+        if ($context->offsetExists('forloop')) {
+            $loopVars->parentloop = $context['forloop'];
+        }
         
+        $rendered = array();
         foreach ($elements as $key => $element) {
             if ($hasKey) {
                 $context[$varNames[0]] = $key;
@@ -97,6 +97,11 @@ class ForStatement extends Node
         }
 
         $context->pop();
+        
+        // restore parent loop.
+        if (isset($loopVars->parentloop)) {
+            $context['forloop'] = $loopVars->parentloop;
+        }
         
         return implode('', $rendered);
     }
