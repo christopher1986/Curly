@@ -64,8 +64,8 @@ class Parser implements ParserInterface
 
         $nodes = array();
         while ($stream->valid()) {
-            // template tags
-            $stream->consumeIf(Token::T_OPEN_TAG, Token::T_CLOSE_TAG);
+            // consume open tag
+            $stream->consumeIf(Token::T_OPEN_TAG);
 
             if ($until && $stream->matches($until)) {
                 return $nodes;
@@ -94,6 +94,9 @@ class Parser implements ParserInterface
                 $nodes[] = $this->parseExpression($stream);
                 $stream->expects(Token::T_SEMICOLON, Token::T_CLOSE_TAG);
             }
+            
+            // consume close tag
+            $stream->consumeIf(Token::T_CLOSE_TAG);
         }
         
         return new Node($nodes);
