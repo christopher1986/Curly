@@ -5,6 +5,8 @@ namespace Curly;
 use Curly\Io\Stream\PipedInputStream;
 use Curly\Io\Stream\PipedOutputStream;
 
+use Webwijs\Error\ErrorHandler;
+
 /**
  * A concrete implementation of the {@link TemplateInterface} and will render
  * the underlying template content with the specified template context.

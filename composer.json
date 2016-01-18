@@ -10,11 +10,19 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.4.0",
+        "webwijs/error-handler": "dev-master"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "git@bitbucket.org:christopher1986/error-handler.git"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Curly\\": "src/"
         }
     }
 }
+
