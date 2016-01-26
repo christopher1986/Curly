@@ -2,12 +2,13 @@
 
 namespace Curly;
 
-use Curly\Collection\Map;
 use Curly\Lang\LiteralInterface;
 use Curly\Lang\OperatorInterface;
 use Curly\Lang\StatementInterface;
 use Curly\Lang\TagInterface;
 use Curly\Lang\Operator\AbstractBinaryOperator;
+
+use Webwijs\Collection\Map;
 
 /** 
  *
