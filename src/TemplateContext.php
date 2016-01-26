@@ -6,7 +6,7 @@ use ArrayIterator;
 use IteratorAggregate;
 use SplDoublyLinkedList;
 
-use Curly\Collection\Exception\EmptyCollectionException;
+use Webwijs\Collection\Exception\EmptyCollectionException;
 
 /**
  * The TemplateContext is a concrete implementation of the {@link ContextInterface} interface and gives
