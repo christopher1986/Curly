@@ -2,16 +2,16 @@
 
 namespace Curly;
 
-use Curly\Collection\HashSet;
-use Curly\Loader\StringLoader;
-use Curly\Parser\Exception\TemplateNotFoundException;
-
 use Curly\Lang\Filter as Filter;
 use Curly\Lang\Literal as Literal;
 use Curly\Lang\Operator\Binary as Binary;
 use Curly\Lang\Operator\Unary as Unary;
 use Curly\Lang\Statement as Statement;
 use Curly\Lang\Tag as Tag;
+use Curly\Loader\StringLoader;
+use Curly\Parser\Exception\TemplateNotFoundException;
+
+use Webwijs\Collection\HashSet;
 
 /**
  *
