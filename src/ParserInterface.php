@@ -2,7 +2,7 @@
 
 namespace Curly;
 
-use Curly\Parser\Stream\TokenStream;
+use Curly\Parser\Stream\TokenStreamInterface;
 use Curly\Parser\TokenInterface;
 
 /**
@@ -23,36 +23,36 @@ interface ParserInterface extends EngineCapableInterface, LibraryCapableInterfac
      *
      * The second argument provides the capability to parse the specified stream until
      * one of the matching tokens has been found. The syntax of this argument is
-     * identical to that of the {@link TokenStream::matches($types) method.
+     * identical to that of the {@link TokenStreamInterface::matches($types) method.
      *
-     * @param TokenStream a stream of tokens to parse.
+     * @param TokenStreamInterfaceInterface a stream of tokens to parse.
      * @param string|string[]|null $until (optional) one or more possible token types to match.
      * @return NodeInterface|null an abstract syntax tree.
      */
-    public function parse(TokenStream $stream, $until = null);
+    public function parse(TokenStreamInterface $stream, $until = null);
     
     /**
      * Parse a single expression.
      *
-     * @param TokenStream a stream of tokens to parse.
+     * @param TokenStreamInterface a stream of tokens to parse.
      * @param int $precedence (optional) the operator precedence that when exceeded by an operator will add
      *                                   that operator as a child node to the previous node.
      * @return NodeInterface an expression node.
      */
-    public function parseExpression(TokenStream $stream, $precedence = 0);
+    public function parseExpression(TokenStreamInterface $stream, $precedence = 0);
     
     /**
      * Parse a primary expression.
      *
-     * @param TokenStream a stream of tokens to parse.
+     * @param TokenStreamInterface a stream of tokens to parse.
      * @return NodeInterface an expression node.
      */
-    public function parsePrimaryExpression(TokenStream $stream);
+    public function parsePrimaryExpression(TokenStreamInterface $stream);
     
     /**
      * Returns a stream containing tokens.
      *
-     * @return TokenStream a stream containing tokens.
+     * @return TokenStreamInterface a stream containing tokens.
      */
     public function getStream();
 }

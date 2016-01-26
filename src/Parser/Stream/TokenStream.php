@@ -44,16 +44,13 @@ use Curly\Parser\TokenInterface;
 use Curly\Parser\Exception\SyntaxException;
 
 /**
- * A stream that solely operates on {@link TokenInterface} instances.
- *
- * The {@link TokenStream} decorates another stream to add additional 
- * functionality to that stream.
+ * The TokenStream class is a concrete implementation of the {@link TokenStreamInterface}.
  *
  * @author Chris Harris
  * @version 1.0.0
  * @since 1.0.0
  */
-class TokenStream implements StreamInterface
+class TokenStream implements TokenStreamInterface
 {
     /**
      * The underlying stream.
@@ -99,11 +96,8 @@ class TokenStream implements StreamInterface
     }
     
     /**
-     * Consume and return the token at the current stream position if the token matches any of the specified token types.
-     *
-     * @param mixed $types one or more possible token types to match.
-     * @return TokenInterface|null the token at the current stream position, or null on failure.
-     */ 
+     * {@inheritDoc}
+     */
     public function consumeIf($types)
     {      
         $types = (is_array($types)) ? $types : func_get_args();
@@ -169,16 +163,7 @@ class TokenStream implements StreamInterface
     }
     
     /**
-     * Returns true if the current token matches any of the specified token types.
-     * A token can be matched on both token type and value or soley on it's token type.
-     *
-     * <code>
-     *     $stream->matches(Token::T_OPERATOR, Token::T_IDENTIFIER);
-     *     $stream->matches(sprintf('%s:is', Token::T_OPERATOR), Token::T_IDENTIFIER);
-     * </code>
-     *
-     * @param string|string[] $types one or more possible token types to match.
-     * @return bool true if the current token matches with at least one of the specified token types, false otherwise.
+     * {@inheritDoc}
      */
     public function matches($types)
     {
@@ -204,17 +189,7 @@ class TokenStream implements StreamInterface
     }
 
     /**
-     * Tests whether the current token within the stream is one of the specified types and moves the current stream position forward.
-     *
-     * <code>
-     *     $stream->expects(Token::T_OPERATOR, Token::T_IDENTIFIER);
-     *     $stream->expects(sprintf('%s:is', Token::T_OPERATOR), Token::T_IDENTIFIER);
-     * </code>
-     *     
-     * @param string|string[] $types one or more possible token types to match.
-     * @return TokenInterface the token that matched one of the specified types.
-     * @throws SyntaxException if the current token is not one of the specified types.
-     * @see TokenStream::matches($types);
+     * {@inheritDoc}
      */
     public function expects($types)
     {    

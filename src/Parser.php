@@ -13,7 +13,7 @@ use Curly\Ast\Node\Expression\PropertyAccess;
 use Curly\Ast\Node\Expression\SimpleName;
 use Curly\Ast\Node\Expression\Variable;
 use Curly\Parser\Exception\SyntaxException;
-use Curly\Parser\Stream\TokenStream;
+use Curly\Parser\Stream\TokenStreamInterface;
 use Curly\Parser\TokenInterface;
 use Curly\Parser\Token;
 
@@ -36,7 +36,7 @@ class Parser implements ParserInterface
     /**
      * A stream containing tokens to parse.
      *
-     * @var TokenStream
+     * @var TokenStreamInterface
      */
     private $stream;
     
@@ -53,7 +53,7 @@ class Parser implements ParserInterface
     /**
      * {@inheritDoc}
      */
-    public function parse(TokenStream $stream, $until = null)
+    public function parse(TokenStreamInterface $stream, $until = null)
     {       
         // second argument if provided must be array.
         if (func_get_args() >= 2) {
@@ -105,7 +105,7 @@ class Parser implements ParserInterface
     /**
      * {@inheritDoc}
      */
-    public function parseExpression(TokenStream $stream, $precedence = 0)
+    public function parseExpression(TokenStreamInterface $stream, $precedence = 0)
     {
         if (!$stream->valid()) {
             throw new SyntaxException('Unexpected end of file.');   
@@ -135,7 +135,7 @@ class Parser implements ParserInterface
     /**
      * {@inheritDoc}
      */
-    public function parsePrimaryExpression(TokenStream $stream)
+    public function parsePrimaryExpression(TokenStreamInterface $stream)
     {    
         $node  = null;
         $token = $stream->current();
@@ -181,7 +181,7 @@ class Parser implements ParserInterface
     /**
      * Parse tokens that may follow a primary expression.
      *
-     * @param TokenStream a stream of tokens to parse.
+     * @param TokenStreamInterface a stream of tokens to parse.
      * @param NodeInterface the node that proceeds the tokens to parse.
      * @return NodeInterface a node for the postfix expression.
      * @see Parser::parseObjectAccessExpression($stream, $node)
@@ -225,7 +225,7 @@ class Parser implements ParserInterface
      *     $name   = $obj.getPerson().getName();
      * </code>
      *
-     * @param TokenStream a stream of tokens to parse.
+     * @param TokenStreamInterface a stream of tokens to parse.
      * @param NodeInterface the array node to access.
      * @return NodeInterface a node that represents the object access expression.
      */
@@ -263,7 +263,7 @@ class Parser implements ParserInterface
      *     $value = ['foo', ['foobar', 'foobaz'], 'bar'][1][0];
      * </code>
      *
-     * @param TokenStream a stream of tokens to parse.
+     * @param TokenStreamInterface a stream of tokens to parse.
      * @param NodeInterface the array node to access.
      * @return NodeInterface a node that represents the array access expression.
      */
@@ -290,7 +290,7 @@ class Parser implements ParserInterface
      *     $value    = $value|upper|default('baz');
      * </code>
      *
-     * @param TokenStream a stream of tokens to parse.
+     * @param TokenStreamInterface a stream of tokens to parse.
      * @param NodeInterface the node to which a filter is applied.
      * @return NodeInterface a filtered expression node.
      * @throws SyntaxException if the current token is not a pipeline.
@@ -342,9 +342,9 @@ class Parser implements ParserInterface
     /**
      * Set a stream of token to parse.
      *
-     * @param TokenStream $stream a stream of tokens.
+     * @param TokenStreamInterface $stream a stream of tokens.
      */
-    private function setStream(TokenStream $stream)
+    private function setStream(TokenStreamInterface $stream)
     {
         $this->stream = $stream;
     }
