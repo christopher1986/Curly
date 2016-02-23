@@ -60,7 +60,7 @@ abstract class AbstractBinary extends Node
     }
     
     /**
-     * Returns a collection of operands which has been rendered using the specified context.
+     * Returns a collection of operands which have been rendered using the specified context.
      *
      * @param ContextInterface $context the template context.
      * @param OutputStreamInterface $out the output stream.
