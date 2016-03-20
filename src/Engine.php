@@ -147,6 +147,20 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     }
     
     /**
+     * Add the specified {@link LoaderInterface} instance to the front of the chain of template loaders.
+     *
+     * @param LoaderInterface $loader the loader with which to load templates.
+     */
+    public function addLoader(LoaderInterface $loader)
+    {
+        if (($previous = $this->getLoader()) !== null) {
+            $loader->setLoader($previous);
+        }
+        
+        $this->loader = $loader;
+    }
+    
+    /**
      * Returns a {@link LoaderInterface} instance used to load one or more templates.
      *
      * @return LoaderInterface a template loader.
@@ -243,6 +257,7 @@ final class Engine implements EngineInterface, LibraryAwareInterface
     private function defaultFilters()
     {
         $filters = array(
+            'escape'        => new Filter\EscapeFilter(),
             'join'          => new Filter\JoinFilter(),
             'lower'         => new Filter\LowerFilter(),
             'upper'         => new Filter\UpperFilter(),
