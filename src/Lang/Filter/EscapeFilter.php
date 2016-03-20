@@ -22,7 +22,7 @@ class EscapeFilter
      * @return string the specified string with HTML entities.
      * @link http://php.net/manual/en/function.htmlspecialchars.php htmlspecialchars
      */
-    public function escape($value)
+    public function filter($value)
     {
         return (is_string($value)) ? htmlspecialchars($value, ENT_QUOTES) : $value;
     }
