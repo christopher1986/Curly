@@ -10,7 +10,7 @@ use Curly\Parser\Token;
 use Curly\Lang\StatementInterface;
 
 /**
- *
+ * Creates an {@link IfStatementNode} instance for conditional statements.
  *
  * @author Chris Harris
  * @version 1.0.0
