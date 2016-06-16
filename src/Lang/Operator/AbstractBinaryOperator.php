@@ -4,7 +4,6 @@ namespace Curly\Lang\Operator;
 
 use Curly\Ast\NodeInterface;
 use Curly\Lang\OperatorInterface;
-use Curly\Parser\Exception\SyntaxException;
 
 /**
  * A binary operator combines two expressions, also known as operands to produce another expression.
