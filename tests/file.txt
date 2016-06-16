@@ -1,0 +1,51 @@
+<h3>Iteration of months:</h3>
+{% if (typeof $months == 'array'): %}
+    <ul>
+    {% for ($month in $months): %}
+        <li>{{ $month|capitalize }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<h3>Mathematics with operator precedence:</h3>
+{% $result = 2 + 2 * 4 %}
+<table>
+    <tbody>
+        <tr>
+            <td>sum of 2 + 2 * 4 =</td>
+            <td>{{ $result }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Floating point to currency:</h3>
+{% $value = 1008.2982 %}
+<table>
+    <tbody>
+        <tr>
+            <td>The value "1008.2982" expressed euro's<td>
+            <td>&euro; {{ $value|number_format(2, ',', '.') }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<h3>Array iteration:</h3>
+<ul>
+{% for ($number in [1,1,2,3,5,8,13,21,34,55]): %}
+    <li>{{ $number }}</li>
+{% endfor %}
+</ul>
+
+<h3>Object iteration:</h3>
+<ul>
+{% for ($key, $value in {'First': 'Foo', 'Second': 'Bar', 'Third': 'Baz'}): %}
+    <li>
+        <p>
+        Key: {{ $key }},<br />
+        Value: {{ $value }}
+        </p>
+    </li>
+{% endfor %}
+</ul>
+
+        
