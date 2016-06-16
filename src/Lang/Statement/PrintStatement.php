@@ -9,7 +9,7 @@ use Curly\Parser\Token;
 use Curly\Lang\StatementInterface;
 
 /**
- * 
+ * Creates a {@link PrintStatementNode} instance that displays the result of an expression.
  *
  * @author Chris Harris
  * @version 1.0.0
