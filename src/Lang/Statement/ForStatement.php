@@ -4,7 +4,6 @@ namespace Curly\Lang\Statement;
 
 use Curly\Ast\Node\ForStatement as ForStatementNode;
 use Curly\Ast\Node\Expression\Variable;
-use Curly\Parser\Exception\SyntaxException;
 use Curly\Parser\Stream\TokenStream;
 use Curly\ParserInterface;
 use Curly\Parser\Token;
